@@ -13,3 +13,13 @@ def cria_campo(query):
         commit()
     except:
         pass
+
+def produtos():
+    cur_fdb.execute("select cadpro, cod_ant from cadest")
+
+    hash_map = {}
+
+    for row in cur_fdb.fetchallmap():
+        hash_map[row['cod_ant']] = row['cadpro']
+
+    return hash_map

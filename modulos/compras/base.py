@@ -56,36 +56,40 @@ def cadest():
     cria_campo("ALTER TABLE Cadest ADD estrut_ant int")
     cria_campo("ALTER TABLE Cadest ADD grupo_ant varchar(2)")
     cria_campo("ALTER TABLE Cadest ADD subgrupo_ant varchar(2)")
-    cria_campo("ALTER TABLE Cadest ADD cod_ant varchar(4)")
+    cria_campo("ALTER TABLE Cadest ADD cod_ant varchar(14)")
+    cria_campo("ALTER TABLE Cadest ADD tipopro_ant varchar(21)")
     cria_campo("DELETE FROM Cadest") 
     print("Inserindo Cadest...")
 
     i = 0
 
-    consulta = fetchallmap("""select							
-								estrut+grupo as grupo,
-								SUBSTRING(itemat,0, 2) + subgrp as subgrp,
-								SUBSTRING(itemat, 2, 4) as codigo,
-								rtrim(despro) as disc1,
-								CASE
-									when materialOuServico = 'M' then 'P'
-									else 'S'
-								END as tipopro,
-								rtrim(b.upsigl) as unid1,
-								compl_descr as discr1,
-								IdMaterial as codreduz,
-								CASE
-									when desativacompra = 0 then 'S'
-									else 'N'
-								END as ocultar,
-								estrut as estrut_ant,
-								grupo as grupo_ant,
-								subgrp as subgrupo_ant,
-								itemat as cod_ant
-							from
-								smar_compras.mat.MXT62300 a
-							inner join smar_compras.mat.MCT67900 b on
-								a.upcod1 = b.upcod;""")
+    consulta = fetchallmap("""select
+                                DISTINCT (codigo) cod_ant,
+                                grupo = SUBSTRING(Grupo, 1, 1) + SUBSTRING(Grupo, 3, 2),
+                                subgrp = SUBSTRING(codigo, 9, 1)+ SUBSTRING(Grupo, 6, 2),
+                                codigo = SUBSTRING(codigo, 10, 3),
+                                rtrim(descrição) disc1,
+                                CASE
+                                    when [Tipo de Material] in ('Consumo', 'Acervo', 'Distribuição Gratuita', 'Móvel', 'Veículo') then 'P'
+                                    else 'S'
+                                END tipopro,
+                                [Sigla Unidade Compra] unid1,
+                                [Especificação] discr1,
+                                'N' ocultar,
+                                SUBSTRING(Grupo, 1, 1) estrut_ant,
+                                SUBSTRING(Grupo, 3, 2) grupo_ant,
+                                SUBSTRING(Grupo, 6, 2) subgrupo_ant,
+                                [Tipo de Material] tipopro_ant,
+                                CASE 
+                                    when cast(SUBSTRING(codigo, 9, 4) as integer) % 1000 = 0 then 'S'
+                                    else 'N'
+                                END extourou
+                            from
+                                mat.ListaMateriaisAtivos lma
+                            order by
+                                grupo,
+                                subgrp,
+                                codigo""")
     
     insert = cur_fdb.prep("""INSERT
 								INTO
@@ -102,10 +106,11 @@ def cadest():
 								estrut_ant,
 								grupo_ant,
 								subgrupo_ant,
-								cod_ant)
+								cod_ant,
+                                tipopro_ant)
 							VALUES(?,?,?,?,?,
 								?,?,?,?,?,
-								?,?,?,?)""")
+								?,?,?,?,?)""")
     
     for row in tqdm(consulta):
         i += 1
@@ -116,14 +121,15 @@ def cadest():
         tipopro = row['tipopro']
         unid1   = row['unid1']
         discr1  = row['discr1']
-        codreduz = row['codreduz']
+        codreduz = row['codigo']
         ocultar = row['ocultar']
         estrut_ant = row['estrut_ant']
         grupo_ant = row['grupo_ant']
         subgrupo_ant = row['subgrupo_ant']
         cod_ant = row['cod_ant']
+        tipopro_ant = row['tipopro_ant']
 
-        if int(cod_ant) >= 1000:
+        if row['extourou'] == 'S':
             nome_grupo = extourou_codigo_item(grupo, subgrupo_ant)
             sql = "INSERT INTO cadsubgr (grupo, subgrupo, nome, ocultar, grupo_ant, subgrupo_ant, estrutura_ant) VALUES (?, ?, ?, 'N', ?, ?, ?)"
             try:
@@ -134,7 +140,7 @@ def cadest():
         
         cadpro = f'{grupo}.{subgrp}.{codigo}'
 
-        cur_fdb.execute(insert, (cadpro, grupo, subgrp, codigo, disc1[:1024], tipopro, unid1, discr1, codreduz, ocultar, estrut_ant, grupo_ant, subgrupo_ant, cod_ant))
+        cur_fdb.execute(insert, (cadpro, grupo, subgrp, codigo, disc1[:1024], tipopro, unid1, discr1, codreduz, ocultar, estrut_ant, grupo_ant, subgrupo_ant, cod_ant, tipopro_ant))
         commit() if i % 1000 == 0 else None
     commit()
 

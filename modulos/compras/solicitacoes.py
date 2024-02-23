@@ -2,12 +2,14 @@ from conexao import *
 from ..tools import *
 from tqdm import tqdm
 
-PRODUTOS = cur_fdb.execute("select cadpro, codreduz from cadest").fetchall()
+PRODUTOS = produtos()
 
 def solicitacoes():
     cur_fdb.execute("delete from icadorc")
     cur_fdb.execute("delete from cadorc")
     print("Inserindo Solicitações...")
+
+    solicitacoes = {}
 
     consulta = fetchallmap(f"""select
                                     right('00000' + cast(numreq as varchar),
@@ -62,4 +64,49 @@ def solicitacoes():
         numorc = row['numorc']
 
         cur_fdb.execute(insert,(id_cadorc, num, ano, numorc, dtorc, descr, prioridade, obs, status, liberado, codccusto, liberado_tela, EMPRESA))
+        solicitacoes[numorc] = id_cadorc
+    commit()
+
+    print("Inserindo Itens de Solicitações...")
+
+    insert = cur_fdb.prep('insert into icadorc (numorc, item, cadpro, qtd, valor, itemorc, codccusto, itemorc_ag, id_cadorc) values (?,?,?,?,?,?,?,?,?)')
+    insert_vcadorc = cur_fdb.prep("""insert into vcadorc (numorc, item, codif, vlruni, vlrtot, ganhou, vlrganhou, id_cadorc) values (?,?,?,?,?,?,?,?)""")
+
+    consulta = fetchallmap(f"""SELECT
+                                    right('00000' + cast(cabecalho.numreq as varchar),
+                                    5)+ '/' + SUBSTRING(cabecalho.anoreq, 3, 2) numorc, 
+                                    [item] = item.nuitem,
+                                    [Requisitante] = uo.idNivel5,
+                                    [cadpro] = produto.estrut + '.' + produto.grupo + '.' + produto.subgrp + '.' + produto.itemat + '-' + produto.digmat,
+                                    [Quantidade] = item.quatde,
+                                    [Valor Unitário] = item.valite,
+                                    [Total item] = item.totite
+                                FROM
+                                    mat.MCT63400 cabecalho
+                                JOIN mat.MCT63500 item ON
+                                    item.numreq = cabecalho.numreq
+                                    AND item.anoreq = cabecalho.anoreq
+                                JOIN mat.unidorcamentariaW uo on
+                                    uo.idnivel5 = cabecalho.idnivel5
+                                JOIN mat.MXT62300 produto ON
+                                    produto.estrut = item.estrut
+                                    AND produto.grupo = item.grupo
+                                    AND produto.subgrp = item.subgrp
+                                    AND produto.itemat = item.itemat
+                                    AND produto.digmat = item.digmat
+                                where
+                                    cabecalho.anoreq in ({ANO}, {ANO - 1})""")
+    
+    for row in tqdm(consulta):
+        numorc = row['numorc']
+        item = row['item']    
+        codccusto = row['Requisitante']
+        cadpro = PRODUTOS[row['cadpro']]
+        qtd = float(row['Quantidade'])
+        valor = float(row['Valor Unitário'])
+        itemorc = row['item']
+        itemorc_ag = row['item']
+        id_cadorc = solicitacoes[numorc]
+        cur_fdb.execute(insert,(numorc, item, cadpro, qtd, valor, itemorc, codccusto, itemorc_ag, id_cadorc))
+        # insert_vcadorc = cur_d.prep("""insert into vcadorc (numorc, item, codif, vlruni, vlrtot, ganhou, vlrganhou, id_cadorc) values (?,?,?,?,?,?,?,?)""")
     commit()
