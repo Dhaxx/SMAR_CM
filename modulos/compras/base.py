@@ -156,57 +156,22 @@ def centro_custo():
     cria_campo('ALTER TABLE CENTROCUSTO ADD cod_ant varchar(19)')
     print("Inserindo Centros de Custo...")
 
-    query = fetchallmap(f"""SELECT
-                                poder,
-                                orgao,
-                                unidade,
-                                ROW_NUMBER() OVER (ORDER BY poder) AS codccusto,
-                                descr,
-                                empresa,
-                                ocultar,
-                                placa,
-                                cod_ant
-                            FROM
-                                (
-                                    SELECT
-                                        SUBSTRING(nivel1, 2, 3) AS poder,
-                                        SUBSTRING(nivel2, 2, 3) AS orgao,
-                                        SUBSTRING(nivel3, 2, 3) AS unidade,
-                                        descr4 AS descr,
-                                        201 AS empresa,
-                                        CASE 
-                                            WHEN ativa = 0 THEN 'S'
-                                            ELSE 'N'
-                                        END AS ocultar,
-                                        NULL AS placa,
-                                        nivel1 + '.' + nivel2 + '.' + nivel3 + '.' + nivel4 + '.000' AS cod_ant,
-                                        ROW_NUMBER() OVER (ORDER BY nivel1) AS row_num
-                                    FROM
-                                        mat.MXT70900
-                                    WHERE
-                                        ano = {ANO} AND descr4 <> '.'
-                                    UNION ALL 
-                                    SELECT
-                                        SUBSTRING(nivel1, 2, 3) AS poder,
-                                        SUBSTRING(nivel2, 2, 3) AS orgao,
-                                        SUBSTRING(nivel3, 2, 3) AS unidade,
-                                        descr5 AS descr,
-                                        201 AS empresa,
-                                        CASE 
-                                            WHEN ativa = 0 THEN 'S'
-                                            ELSE 'N'
-                                        END AS ocultar,
-                                        CASE 
-                                            WHEN sigla5 = '' THEN SUBSTRING(CAST(SUBSTRING(descr5,1,2) AS VARCHAR) + CAST(ROW_NUMBER() OVER (ORDER BY nivel1) AS VARCHAR), 0, 7)
-                                            ELSE SUBSTRING(sigla5,0,7)
-                                        END AS placa,
-                                        nivel1 + '.' + nivel2 + '.' + nivel3 + '.' + nivel4 + '.' + nivel5 AS cod_ant,
-                                        ROW_NUMBER() OVER (ORDER BY nivel1) AS row_num
-                                    FROM
-                                        mat.MXT71100
-                                    WHERE
-                                        ano = {ANO} AND descr5 <> '.'
-                                ) AS subquery;""")
+    query = fetchallmap(f"""select
+                                substring(nivel1,2,4) poder,
+                                substring(nivel2,2,4)  orgao,
+                                substring(nivel3,2,4) unidade,
+                                rtrim(DescrUltimoNivel) descr,
+                                rtrim(SiglaUltimoNivel) placa,
+                                CASE 
+                                    when ativa = 0 then 'S'
+                                    else 'N'
+                                END ocultar,
+                                idNivel5 codccusto,
+                                UnidOrc cod_ant
+                            from
+                                mat.UnidOrcamentariaW
+                            where
+                                ano = {ANO}""")
 
     insert = cur_fdb.prep("""insert
                                 into
@@ -215,26 +180,28 @@ def centro_custo():
                                 destino,
                                 ccusto,
                                 descr,
+                                obs,
                                 placa,
                                 codccusto,
                                 empresa,
                                 unidade,
                                 ocultar,
                                 cod_ant)
-                            values (?,?,?,?,?,?,?,?,?,?,?)""")
+                            values (?,?,?,?,?,?,?,?,?,?,?,?)""")
     
     for row in tqdm(query):
         poder = row['poder']
         orgao = row['orgao']
         destino = '000901001'
         ccusto = '001'
-        descr = row['descr']
-        placa = row['placa']
+        descr = row['descr'][:60]
+        obs = row['descr']
+        placa = row['placa'][:7]
         codccusto = row['codccusto']
         empresa = EMPRESA
         unidade = row['unidade']
         ocultar = row['ocultar']
         codant = row['cod_ant']
 
-        cur_fdb.execute(insert, (poder, orgao, destino, ccusto, descr, placa, codccusto, empresa, unidade, ocultar, codant))
+        cur_fdb.execute(insert, (poder, orgao, destino, ccusto, descr, obs, placa, codccusto, empresa, unidade, ocultar, codant))
     commit()
