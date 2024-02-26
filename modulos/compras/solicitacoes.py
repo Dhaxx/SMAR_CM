@@ -1,4 +1,4 @@
-from modulos.compras.conexao import *
+from conexao import *
 from ..tools import *
 from tqdm import tqdm
 
