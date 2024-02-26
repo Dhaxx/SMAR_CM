@@ -1,4 +1,4 @@
-from conexao import cur_fdb, commit
+from modulos.compras.conexao import cur_fdb, commit
 
 ANO = int(cur_fdb.execute("SELECT mexer FROM cadcli").fetchone()[0])
 EMPRESA = cur_fdb.execute("SELECT empresa FROM cadcli").fetchone()[0]

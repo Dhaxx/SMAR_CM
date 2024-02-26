@@ -1,4 +1,4 @@
-from conexao import *
+from modulos.compras.conexao import *
 from ..tools import * 
 from tqdm import tqdm
 
@@ -133,10 +133,10 @@ def cadest():
             nome_grupo = extourou_codigo_item(grupo, subgrupo_ant)
             sql = "INSERT INTO cadsubgr (grupo, subgrupo, nome, ocultar, grupo_ant, subgrupo_ant, estrutura_ant) VALUES (?, ?, ?, 'N', ?, ?, ?)"
             try:
-                cur_fdb.execute(sql,(grupo, subgrp, nome_grupo, grupo_ant, subgrupo_ant, estrut_ant))
+                cur_fdb.execute(sql,(grupo, subgrp, nome_grupo[:50], grupo_ant, subgrupo_ant, estrut_ant))
                 commit()
-            except:
-                pass
+            except Exception as e :
+                print("Erro ao desdobrar subgrupo", e)
         
         cadpro = f'{grupo}.{subgrp}.{codigo}'
 
