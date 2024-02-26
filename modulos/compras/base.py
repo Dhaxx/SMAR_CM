@@ -68,32 +68,74 @@ def cadest():
     i = 0
 
     consulta = fetchallmap("""select
-                                DISTINCT (codigo) cod_ant,
-                                grupo = SUBSTRING(Grupo, 1, 1) + SUBSTRING(Grupo, 3, 2),
-                                subgrp = SUBSTRING(codigo, 9, 1)+ SUBSTRING(Grupo, 6, 2),
-                                codigo = SUBSTRING(codigo, 10, 3),
-                                rtrim(descrição) disc1,
-                                CASE
-                                    when [Tipo de Material] in ('Consumo', 'Acervo', 'Distribuição Gratuita', 'Móvel', 'Veículo') then 'P'
-                                    else 'S'
-                                END tipopro,
-                                [Sigla Unidade Compra] unid1,
-                                [Especificação] discr1,
-                                'N' ocultar,
-                                SUBSTRING(Grupo, 1, 1) estrut_ant,
-                                SUBSTRING(Grupo, 3, 2) grupo_ant,
-                                SUBSTRING(Grupo, 6, 2) subgrupo_ant,
-                                [Tipo de Material] tipopro_ant,
-                                CASE 
-                                    when cast(SUBSTRING(codigo, 9, 4) as integer) % 1000 = 0 then 'S'
-                                    else 'N'
-                                END extourou
-                            from
-                                mat.ListaMateriaisAtivos lma
-                            order by
-                                grupo,
-                                subgrp,
-                                codigo""")
+            DISTINCT (codigo) cod_ant,
+            grupo = SUBSTRING(Grupo, 1, 1) + SUBSTRING(Grupo, 3, 2),
+            subgrp = SUBSTRING(codigo, 9, 1)+ SUBSTRING(Grupo, 6, 2),
+            codigo = SUBSTRING(codigo, 10, 3),
+            rtrim(descrição) disc1,
+            CASE
+                when [Tipo de Material] in ('Consumo', 'Acervo', 'Distribuição Gratuita', 'Móvel', 'Veículo') then 'P'
+                else 'S'
+            END tipopro,
+            [Sigla Unidade Compra] unid1,
+            [Especificação] discr1,
+            'N' ocultar,
+            SUBSTRING(Grupo, 1, 1) estrut_ant,
+            SUBSTRING(Grupo, 3, 2) grupo_ant,
+            SUBSTRING(Grupo, 6, 2) subgrupo_ant,
+            [Tipo de Material] tipopro_ant,
+            CASE
+                when cast(SUBSTRING(codigo, 9, 4) as integer) % 1000 = 0 then 'S'
+                else 'N'
+            END extourou
+        from
+            (
+            select
+                [Código] = mx623.estrut + '.' + mx623.grupo + '.' + mx623.subgrp + '.' + mx623.itemat + '-' + mx623.digmat,
+                [Grupo] = x633.estrut + '.' + x633.grupo + '.' + x633.subgrp + ' - ' + x633.desgrp,
+                [Tipo de Material] = CASE
+                    WHEN mx623.ictipmat = 'A' THEN 'Acervo'
+                    WHEN mx623.ictipmat = 'C' THEN 'Consumo'
+                    WHEN mx623.ictipmat = 'G' THEN 'Intangível'
+                    WHEN mx623.ictipmat = 'M' THEN 'Móvel'
+                    WHEN mx623.ictipmat = 'O' THEN 'Obras e Instalações'
+                    WHEN mx623.ictipmat = 'D' THEN 'Distribuição Gratuita'
+                    WHEN mx623.ictipmat = 'S' THEN 'Serviço'
+                    WHEN mx623.ictipmat = 'V' THEN 'Veículo'
+                    WHEN mx623.ictipmat = 'U' THEN 'Outros'
+                END,
+                [Descrição] = RTRIM(mx623.despro) + ISNULL(RTRIM(mx623.despro2),
+                ''),
+                [Sigla Unidade Compra] = mc679.upsigl,
+                [Descrição Unidade Compra] = mc679.updesc,
+                [Classe Patrimonial] = RTRIM(p068.CdClasse) + ' - ' + p068.Classe,
+                [Especificação] = CONVERT(VARCHAR(8000),
+                mx623.compl_descr),
+                [Natureza de Despesa] = SUBSTRING(ele.cdelemdespesa, 1, 1) + '.' + SUBSTRING(ele.cdelemdespesa, 2, 1) + '.' + 
+                                            SUBSTRING(ele.cdelemdespesa, 3, 2) + '.' + SUBSTRING(ele.cdelemdespesa, 5, 2) + '.' + 
+                                            REPLICATE('0',
+                2 - LEN(sub.cdsubelemdespesa)) + RTRIM(sub.cdsubelemdespesa)
+            from
+                mat.MXT62300 mx623
+            INNER JOIN mat.MCT67900 mc679 ON
+                mc679.upcod = mx623.upcod1
+            INNER JOIN mat.MXT63300 x633 ON
+                x633.estrut = mx623.estrut
+                AND x633.grupo = mx623.grupo
+                AND x633.subgrp = mx623.subgrp
+            LEFT JOIN mat.MPV06800 p068 ON
+                p068.idclspatrimonial = mx623.idclspatrimonial_incorporacao
+            LEFT JOIN mat.MXT80300 x803 ON
+                x803.idmaterial = mx623.idmaterial                
+            LEFT JOIN mat.ElementoDespesa ele ON
+                ele.idelemdespesa = x803.idelemdespesa
+            LEFT JOIN mat.SubElementoDespesa sub ON
+                sub.idelemdespesa = ele.idelemdespesa
+                AND sub.idsubelemdespesa = x803.idsubelemdespesa) lma
+        order by
+            grupo,
+            subgrp,
+            codigo""")
     
     insert = cur_fdb.prep("""INSERT
 								INTO
