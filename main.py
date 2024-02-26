@@ -1,5 +1,5 @@
 from modulos.compras import base
-# from modulos.compras import solicitacoes
+from modulos.compras import solicitacoes
 
 def main():
     base.cadunimedida()
@@ -7,7 +7,7 @@ def main():
     base.cadest()
     base.almoxarifado()
     base.centro_custo()
-    # solicitacoes.solicitacoes()
+    solicitacoes.solicitacoes()
 
 if __name__ == '__main__':
     main()

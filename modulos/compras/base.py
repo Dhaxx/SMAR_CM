@@ -8,7 +8,11 @@ def cadunimedida():
 
     print("Inserindo Unidades de Medida...")
 
-    cur_sql.execute("SELECT upsigl, rtrim(updesc) as descricao, upcod FROM smar_compras.mat.MCT67900;") # Consulta banco de Origem
+    cur_sql.execute("""
+        SELECT upsigl,descricao,upcod FROM 
+        (SELECT upsigl, rtrim(updesc) as descricao, upcod, ROW_NUMBER() OVER(PARTITION BY upsigl ORDER BY UPSIGL) SEQUENCIA FROM smar_compras.mat.MCT67900) UNID
+        WHERE SEQUENCIA = 1
+    """) # Consulta banco de Origem
 
     insert = cur_fdb.prep("INSERT INTO CADUNIMEDIDA(sigla, descricao, codant_ant) VALUES(?,?,?)") # Prepara o insert 
 
@@ -132,11 +136,11 @@ def cadest():
         if row['extourou'] == 'S':
             nome_grupo = extourou_codigo_item(grupo, subgrupo_ant)
             sql = "INSERT INTO cadsubgr (grupo, subgrupo, nome, ocultar, grupo_ant, subgrupo_ant, estrutura_ant) VALUES (?, ?, ?, 'N', ?, ?, ?)"
-            try:
-                cur_fdb.execute(sql,(grupo, subgrp, nome_grupo[:50], grupo_ant, subgrupo_ant, estrut_ant))
+            try:                
+                cur_fdb.execute(sql,(grupo, subgrp, nome_grupo, grupo_ant, subgrupo_ant, estrut_ant))
                 commit()
             except Exception as e :
-                print("Erro ao desdobrar subgrupo", e)
+                print("Erro ao desdobrar subgrupo", e,nome_grupo)
         
         cadpro = f'{grupo}.{subgrp}.{codigo}'
 
