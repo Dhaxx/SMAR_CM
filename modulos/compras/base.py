@@ -1,8 +1,9 @@
-from modulos.compras.conexao import *
+from conexao import *
 from ..tools import * 
 from tqdm import tqdm
 
 def cadunimedida():
+    cur_fdb.execute("DELETE FROM CADEST") # Limpa tabela
     cur_fdb.execute("DELETE FROM CADUNIMEDIDA") # Limpa tabela
     cria_campo("ALTER TABLE CADUNIMEDIDA ADD codant_ant INTEGER")
 
@@ -192,6 +193,7 @@ def cadest():
 
 def almoxarifado():
     cria_campo("ALTER TABLE DESTINO ADD cod_ant varchar(8)")
+    cur_fdb.execute("DELETE FROM CENTROCUSTO") 
     cur_fdb.execute("DELETE FROM DESTINO") 
     print("Inserindo Almoxarifado...")
 

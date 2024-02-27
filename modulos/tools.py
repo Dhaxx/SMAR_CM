@@ -1,4 +1,4 @@
-from modulos.compras.conexao import cur_fdb, commit
+from conexao import cur_fdb, commit
 
 ANO = int(cur_fdb.execute("SELECT mexer FROM cadcli").fetchone()[0])
 EMPRESA = cur_fdb.execute("SELECT empresa FROM cadcli").fetchone()[0]
@@ -20,5 +20,15 @@ def produtos():
 
     for row in cur_fdb.fetchallmap():
         hash_map[row['cod_ant']] = row['cadpro']
+
+    return hash_map
+
+def codmodalidades():
+    cur_fdb.execute("select codmod, siglamod from modlic")
+
+    hash_map = {}
+
+    for row in cur_fdb.fetchallmap():
+        hash_map[row['siglamod']] = row['codmod']
 
     return hash_map
