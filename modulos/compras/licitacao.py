@@ -1,11 +1,12 @@
 from conexao import *
 from ..tools import *
 from tqdm import tqdm
-from re import match
 
 PRODUTOS = produtos()
+LICITACAO = ...
 
 def cadlic():
+    global LICITACAO
     cur_fdb.execute('delete from cadlic')
     cria_campo('ALTER TABLE CADLIC ADD criterio_ant varchar(30)')
     cria_campo('ALTER TABLE CADLIC ADD sigla_ant varchar(2)')
@@ -252,8 +253,38 @@ def cadlic():
                   SELECT L.NUMLIC, CAST(1 AS INTEGER), L.DTREAL, L.HORREAL, L.COMP, L.DTENC, L.HORENC, CAST('T' AS VARCHAR(1)), CAST('O' AS VARCHAR(1)) FROM CADLIC L 
                   WHERE numlic not in (SELECT FIRST 1 S.NUMLIC FROM CADLIC_SESSAO S WHERE S.NUMLIC = L.NUMLIC)''')
     commit()
+    LICITACAO = licitacoes() # Popula a constante com as chaves (numpro, sigla_ant, ano, registropreco) => numlic
 
 def cadprolic():
     print("Inserindo Itens...")
+
+    
+def prolics():
+    print("Inserindo Proponentes...")
+
+    consulta = fetchallmap("""select
+                                    convit,
+                                    sigla,
+                                    anoc,
+                                    codfor,
+                                    case 
+                                        when selecao = 0 then 'D'
+                                        else 'A'
+                                    end status,
+                                    'N' regpreco
+                                from
+                                    mat.MCT70100
+                                union all
+                                select
+                                    convit,
+                                    sigla,
+                                    anoc,
+                                    codfor,
+                                    'A' status,
+                                    'S' regpreco
+                                from
+                                    mat.mct90400""")
+    
+    insert = cur_fdb.prep('insert into prolics (numlic, sessao, codif, representante, cpf, rg, habilitado, status, usa_preferencia) values (?,?,?,?,?,?,?,?,?)')
 
     
