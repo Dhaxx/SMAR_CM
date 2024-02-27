@@ -4,7 +4,6 @@ from tqdm import tqdm
 from re import match
 
 PRODUTOS = produtos()
-CODMOD = codmodalidades()
 
 def cadlic():
     cur_fdb.execute('delete from cadlic')

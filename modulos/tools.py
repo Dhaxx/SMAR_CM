@@ -22,13 +22,3 @@ def produtos():
         hash_map[row['cod_ant']] = row['cadpro']
 
     return hash_map
-
-def codmodalidades():
-    cur_fdb.execute("select codmod, siglamod from modlic")
-
-    hash_map = {}
-
-    for row in cur_fdb.fetchallmap():
-        hash_map[row['siglamod']] = row['codmod']
-
-    return hash_map
