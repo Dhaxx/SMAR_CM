@@ -1,6 +1,7 @@
 from modulos.compras import base
 from modulos.compras import solicitacoes
 from modulos.compras import licitacao
+from modulos.compras import cotacoes
 
 
 def main():
@@ -9,7 +10,8 @@ def main():
     base.cadest()
     base.almoxarifado()
     base.centro_custo()
-    solicitacoes.solicitacoes()
+    solicitacoes.cadastro()
+    # cotacoes.cadastro()
     # licitacao.cadlic()
 
 
