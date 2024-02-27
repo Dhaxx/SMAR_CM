@@ -22,3 +22,12 @@ def produtos():
         hash_map[row['cod_ant']] = row['cadpro']
 
     return hash_map
+
+def licitacoes():
+    cur_fdb.execute("select numpro, sigla_ant, ano, registropreco, numlic from cadlic")
+
+    hash_map = {}
+
+    for row in cur_fdb.fetchallmap():
+        hash_map[(row['numpro'], row['sigla_ant'], row['ano'], row['registropreco'])] = row['numlic']
+    return hash_map
