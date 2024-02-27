@@ -1,10 +1,11 @@
 from conexao import *
-from ..tools import * 
+from ..tools import *
 from tqdm import tqdm
 
+
 def cadunimedida():
-    cur_fdb.execute("DELETE FROM CADEST") # Limpa tabela
-    cur_fdb.execute("DELETE FROM CADUNIMEDIDA") # Limpa tabela
+    cur_fdb.execute("DELETE FROM CADEST")  # Limpa tabela
+    cur_fdb.execute("DELETE FROM CADUNIMEDIDA")  # Limpa tabela
     cria_campo("ALTER TABLE CADUNIMEDIDA ADD codant_ant INTEGER")
 
     print("Inserindo Unidades de Medida...")
@@ -13,17 +14,18 @@ def cadunimedida():
         SELECT upsigl,descricao,upcod FROM 
         (SELECT upsigl, rtrim(updesc) as descricao, upcod, ROW_NUMBER() OVER(PARTITION BY upsigl ORDER BY UPSIGL) SEQUENCIA FROM smar_compras.mat.MCT67900) UNID
         WHERE SEQUENCIA = 1
-    """) # Consulta banco de Origem
+    """)  # Consulta banco de Origem
 
-    insert = cur_fdb.prep("INSERT INTO CADUNIMEDIDA(sigla, descricao, codant_ant) VALUES(?,?,?)") # Prepara o insert 
+    insert = cur_fdb.prep("INSERT INTO CADUNIMEDIDA(sigla, descricao, codant_ant) VALUES(?,?,?)")  # Prepara o insert
 
-    for row in tqdm(cur_sql.fetchall()): # Para cada linha da consulta
+    for row in tqdm(cur_sql.fetchall()):  # Para cada linha da consulta
         try:
-            cur_fdb.execute(insert, (row[0],row[1],row[2])) # Executa o insert
+            cur_fdb.execute(insert, (row[0], row[1], row[2]))  # Executa o insert
         except Exception as e:
             print(e)
-            continue 
-    commit() # Salva dados inseridos
+            continue
+    commit()  # Salva dados inseridos
+
 
 def grupo_e_subgrupo():
     cria_campo("ALTER TABLE CADGRUPO ADD estrutura_ant varchar(2)")
@@ -47,15 +49,20 @@ def grupo_e_subgrupo():
                         from
                             smar_compras.mat.mxt63300""")
 
-    insert_grupo = cur_fdb.prep("INSERT INTO CADGRUPO(grupo, nome, ocultar, grupo_ant, estrutura_ant) VALUES(?,?,?,?,?)")
-    insert_subgrupo = cur_fdb.prep("INSERT INTO CADSUBGR(grupo, subgrupo, nome, ocultar, grupo_ant, subgrupo_ant, estrutura_ant) VALUES(?,?,?,?,?,?,?)")
+    insert_grupo = cur_fdb.prep(
+        "INSERT INTO CADGRUPO(grupo, nome, ocultar, grupo_ant, estrutura_ant) VALUES(?,?,?,?,?)")
+    insert_subgrupo = cur_fdb.prep(
+        "INSERT INTO CADSUBGR(grupo, subgrupo, nome, ocultar, grupo_ant, subgrupo_ant, estrutura_ant) VALUES(?,?,?,?,?,?,?)")
 
     for row in tqdm(consulta):
         if row['subgrupo'] == '000':
-            cur_fdb.execute(insert_grupo, (row['grupo'],row['nome'],'N',row['grupo_ant'],row['estrutura_ant'])) 
-        cur_fdb.execute(insert_subgrupo, (row['grupo'],row['subgrupo'],row['nome'][:45],'N',row['grupo_ant'],row['subgrupo_ant'],row['estrutura_ant']))
-    cur_fdb.execute(insert_grupo,('112','Null','N','12','1'))
+            cur_fdb.execute(insert_grupo, (row['grupo'], row['nome'], 'N', row['grupo_ant'], row['estrutura_ant']))
+        cur_fdb.execute(insert_subgrupo, (
+            row['grupo'], row['subgrupo'], row['nome'][:45], 'N', row['grupo_ant'], row['subgrupo_ant'],
+            row['estrutura_ant']))
+    cur_fdb.execute(insert_grupo, ('112', 'Null', 'N', '12', '1'))
     commit()
+
 
 def cadest():
     cria_campo("ALTER TABLE Cadest ADD estrut_ant int")
@@ -63,7 +70,7 @@ def cadest():
     cria_campo("ALTER TABLE Cadest ADD subgrupo_ant varchar(2)")
     cria_campo("ALTER TABLE Cadest ADD cod_ant varchar(14)")
     cria_campo("ALTER TABLE Cadest ADD tipopro_ant varchar(21)")
-    cria_campo("DELETE FROM Cadest") 
+    cria_campo("DELETE FROM Cadest")
     print("Inserindo Cadest...")
 
     i = 0
@@ -137,7 +144,7 @@ def cadest():
             grupo,
             subgrp,
             codigo""")
-    
+
     insert = cur_fdb.prep("""INSERT
 								INTO
 								Cadest(cadpro,
@@ -157,17 +164,18 @@ def cadest():
                                 tipopro_ant)
 							VALUES(?,?,?,?,?,
 								?,?,?,?,?,
-								?,?,?,?,?)""")
-    
+								?,?,?,?,?)"""
+                          )
+
     for row in tqdm(consulta):
         i += 1
-        grupo   = row['grupo']
-        subgrp  = row['subgrp']
-        codigo  = row['codigo']
-        disc1   = row['disc1']
+        grupo = row['grupo']
+        subgrp = row['subgrp']
+        codigo = row['codigo']
+        disc1 = row['disc1']
         tipopro = row['tipopro']
-        unid1   = row['unid1']
-        discr1  = row['discr1']
+        unid1 = row['unid1']
+        discr1 = row['discr1']
         codreduz = row['codigo']
         ocultar = row['ocultar']
         estrut_ant = row['estrut_ant']
@@ -179,31 +187,37 @@ def cadest():
         if row['extourou'] == 'S':
             nome_grupo = extourou_codigo_item(grupo, subgrupo_ant)
             sql = "INSERT INTO cadsubgr (grupo, subgrupo, nome, ocultar, grupo_ant, subgrupo_ant, estrutura_ant) VALUES (?, ?, ?, 'N', ?, ?, ?)"
-            try:                
-                cur_fdb.execute(sql,(grupo, subgrp, nome_grupo, grupo_ant, subgrupo_ant, estrut_ant))
+            try:
+                cur_fdb.execute(sql, (grupo, subgrp, nome_grupo, grupo_ant, subgrupo_ant, estrut_ant))
                 commit()
-            except Exception as e :
-                print("Erro ao desdobrar subgrupo", e,nome_grupo)
-        
+            except Exception as e:
+                print("Erro ao desdobrar subgrupo", e, nome_grupo)
+
         cadpro = f'{grupo}.{subgrp}.{codigo}'
 
-        cur_fdb.execute(insert, (cadpro, grupo, subgrp, codigo, disc1[:1024], tipopro, unid1, discr1, codreduz, ocultar, estrut_ant, grupo_ant, subgrupo_ant, cod_ant, tipopro_ant))
+        cur_fdb.execute(insert, (
+            cadpro, grupo, subgrp, codigo, disc1[:1024], tipopro, unid1, discr1, codreduz, ocultar, estrut_ant,
+            grupo_ant,
+            subgrupo_ant, cod_ant, tipopro_ant))
         commit() if i % 1000 == 0 else None
     commit()
 
+
 def almoxarifado():
     cria_campo("ALTER TABLE DESTINO ADD cod_ant varchar(8)")
-    cur_fdb.execute("DELETE FROM CENTROCUSTO") 
-    cur_fdb.execute("DELETE FROM DESTINO") 
+    cur_fdb.execute("DELETE FROM CENTROCUSTO")
+    cur_fdb.execute("DELETE FROM DESTINO")
     print("Inserindo Almoxarifado...")
 
-    consulta = fetchallmap(f"select RIGHT('000000000' + replace(almoxarifado, '.', ''),9) as destino, descricao, almoxarifado from mat.AlmoxValid av ")
+    consulta = fetchallmap(
+        f"select RIGHT('000000000' + replace(almoxarifado, '.', ''),9) as destino, descricao, almoxarifado from mat.AlmoxValid av ")
 
     insert = cur_fdb.prep("insert into destino (COD, DESTI, EMPRESA, COD_ANT) values (?,?,?,?)")
 
     for row in tqdm(consulta):
         cur_fdb.execute(insert, (row['destino'], row['descricao'], EMPRESA, row['almoxarifado']))
     commit()
+
 
 def centro_custo():
     cur_fdb.execute("DELETE FROM CENTROCUSTO")
@@ -242,7 +256,7 @@ def centro_custo():
                                 ocultar,
                                 cod_ant)
                             values (?,?,?,?,?,?,?,?,?,?,?,?)""")
-    
+
     for row in tqdm(query):
         poder = row['poder']
         orgao = row['orgao']
@@ -257,5 +271,6 @@ def centro_custo():
         ocultar = row['ocultar']
         codant = row['cod_ant']
 
-        cur_fdb.execute(insert, (poder, orgao, destino, ccusto, descr, obs, placa, codccusto, empresa, unidade, ocultar, codant))
+        cur_fdb.execute(insert, (
+            poder, orgao, destino, ccusto, descr, obs, placa, codccusto, empresa, unidade, ocultar, codant))
     commit()
