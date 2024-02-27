@@ -12,6 +12,8 @@ def cadlic():
     cria_campo('ALTER TABLE CADLIC ADD status_ant varchar(1)')
     print('Inserindo Cadastro de licitações...')
 
+    i = 0
+
     insert = cur_fdb.prep("""insert into cadlic (numpro,
                                 datae,
                                 dtpub,
@@ -42,13 +44,14 @@ def cadlic():
                                 status_ant,
                                 codmod,
                                 empresa,
-                                valor)
+                                valor,
+                                detalhe)
                             VALUES(?,?,?,?,?,
                                 ?,?,?,?,?,
                                 ?,?,?,?,?,
                                 ?,?,?,?,?,
                                 ?,?,?,?,?,
-                                ?,?,?,?,?,?)""")
+                                ?,?,?,?,?,?,?)""")
     
     consulta = fetchallmap(f"""SELECT RIGHT('000000'+CAST(ROW_NUMBER() OVER (ORDER BY ano) AS VARCHAR), 6)+'/'+SUBSTRING(ano, 3, 2) proclic,
                                     RIGHT('000000'+CAST(ROW_NUMBER() OVER (ORDER BY ano) AS VARCHAR), 6) numero, 
@@ -70,7 +73,8 @@ def cadlic():
                                         dtpublicresult dtpub,
                                         dtence dtenc,
                                         '00:00' horabe,
-                                        ISNULL(ISNULL(notaconv, notaconvtxt), objeto_licitacao) discr,--ISNULL(ISNULL(objeto_licitacao, notaconv),notaconvtxt) discr,
+                                        substring(ISNULL(ISNULL(notaconv, notaconvtxt), objeto_licitacao),0,1024) discr,
+                                        ISNULL(ISNULL(notaconv, notaconvtxt), objeto_licitacao) detalhe,
                                         CASE 
                                             WHEN CriterioJulgamento IN ('Dispensa', 'Inexigibilidade', 'Menor Preço') THEN 'Menor Preço Unitário'
                                             WHEN CriterioJulgamento IN ('Maior Lance ou Oferta', 'Maior Desconto') THEN 'Maior Desconto'
@@ -133,9 +137,7 @@ def cadlic():
                                         status status_ant
                                     FROM
                                         MAT.MCT67600
-                                    WHERE
-                                        anoc >= {ANO}
-                                        --anoc BETWEEN 2019 and 2024
+                                    WHERE anoc BETWEEN {ANO-5} and {ANO} --anoc >= {ANO}
                                 union ALL 
                                 SELECT
                                         convit numpro,
@@ -143,7 +145,8 @@ def cadlic():
                                         dtpublicresult dtpub,
                                         dtence dtenc,
                                         '00:00' horabe,
-                                        ISNULL(ISNULL(objeto_licitacao, notaconv),nota2) discr,
+                                        substring(ISNULL(ISNULL(objeto_licitacao, notaconv),nota2),0,1024) discr,
+                                        ISNULL(ISNULL(objeto_licitacao, notaconv),nota2) detalhe,
                                         'Menor Preço Unitário' discr7,
                                         CASE 
                                             WHEN sigla IN (00) THEN 'DI01' --MODALIDADES DE LICITAÇÃO
@@ -200,11 +203,12 @@ def cadlic():
                                         CriterioAceitabilidade criterio_ant,
                                         sigla sigla_ant,
                                         status status_ant
-                                    FROM mat.MCT91400 where anoc >= {ANO}
+                                    FROM mat.MCT91400 where anoc between {ANO-5} and {ANO} --anoc >= {ANO}
                                 ) AS subconsulta
                                 ORDER BY proclic, ANO;""")
     
     for row in tqdm(consulta):
+        i += 1
         numpro = int(row['numpro'])
         datae = row['datae']
         dtpub = row['dtpub']
@@ -236,9 +240,17 @@ def cadlic():
         codmod = row['codmod']
         empresa = EMPRESA
         valor = row['valor']
+        detalhe = row['detalhe']
 
         cur_fdb.execute(insert,(numpro, datae, dtpub, dtenc, horabe, discr, discr7, modlic, dthom, dtadj, comp, numero, ano, registropreco, ctlance, obra, proclic, numlic, liberacompras, microempresa,
-                                 licnova, tlance, mult_entidade, processo_ano, LEI_INVERTFASESTCE, criterio_ant, sigla_ant, status_ant, codmod, empresa, valor))
+                                 licnova, tlance, mult_entidade, processo_ano, LEI_INVERTFASESTCE, criterio_ant, sigla_ant, status_ant, codmod, empresa, valor, detalhe))
+        
+        if i % 1000 == 0:
+            commit()
+        
+    cur_fdb.execute('''INSERT INTO CADLIC_SESSAO (NUMLIC, SESSAO, DTREAL, HORREAL, COMP, DTENC, HORENC, SESSAOPARA, MOTIVO) 
+                  SELECT L.NUMLIC, CAST(1 AS INTEGER), L.DTREAL, L.HORREAL, L.COMP, L.DTENC, L.HORENC, CAST('T' AS VARCHAR(1)), CAST('O' AS VARCHAR(1)) FROM CADLIC L 
+                  WHERE numlic not in (SELECT FIRST 1 S.NUMLIC FROM CADLIC_SESSAO S WHERE S.NUMLIC = L.NUMLIC)''')
     commit()
 
 def cadprolic():
