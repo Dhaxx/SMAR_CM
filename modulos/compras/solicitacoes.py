@@ -6,6 +6,8 @@ PRODUTOS = produtos()
 
 
 def cadastro():
+    print("Inserindo Solicitações...")
+
     global PRODUTOS
     # Ao executar o codigo inteiro da main sem nenhum comentario das funcoes, é necessario re-popular o dict
     if len(PRODUTOS) == 0:
@@ -13,7 +15,6 @@ def cadastro():
 
     cur_fdb.execute("delete from icadorc")
     cur_fdb.execute("delete from cadorc")
-    print("Inserindo Solicitações...")
 
     insert_cadorc = cur_fdb.prep("""insert
                                 into
@@ -93,7 +94,7 @@ def cadastro():
         cabecalho.idnivel5 codccusto,
         'L' liberado_tela,
         'S' registropreco,
-                                        [item] = item.nuitem,
+        [item] = item.nuitem,
         [Requisitante] = uo.idNivel5,
         [cadpro] = produto.estrut + '.' + produto.grupo + '.' + produto.subgrp + '.' + produto.itemat + '-' + produto.digmat,
         [Quantidade] = item.quatde,
@@ -160,7 +161,7 @@ def cadastro():
             liberado = row['liberado']
             codccusto = row['codccusto']
             liberado_tela = row['liberado_tela']
-            registropreco = 'N'
+            registropreco = row['registropreco']
 
             cur_fdb.execute(insert_cadorc, (
                 id_cadorc, num, ano, numorc, dtorc, descr, prioridade, obs, status, liberado, codccusto, liberado_tela,
