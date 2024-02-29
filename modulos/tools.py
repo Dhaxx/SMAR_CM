@@ -1,4 +1,5 @@
-from conexao import cur_fdb, commit
+from conexao import cur_fdb, commit, fetchallmap
+from tqdm import tqdm
 
 ANO = int(cur_fdb.execute("SELECT mexer FROM cadcli").fetchone()[0])
 EMPRESA = cur_fdb.execute("SELECT empresa FROM cadcli").fetchone()[0]
@@ -33,6 +34,10 @@ def produtos():
 
 
 def licitacoes():
+    cria_campo('ALTER TABLE CADLIC ADD criterio_ant varchar(30)')
+    cria_campo('ALTER TABLE CADLIC ADD sigla_ant varchar(2)')
+    cria_campo('ALTER TABLE CADLIC ADD status_ant varchar(1)')
+
     cur_fdb.execute("select numpro, sigla_ant, ano, registropreco, numlic from cadlic")
 
     hash_map = {}

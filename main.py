@@ -5,11 +5,11 @@ from modulos.compras import cotacoes
 
 
 def main():
-    # base.cadunimedida()
-    # base.grupo_e_subgrupo()
-    # base.cadest()
-    # base.almoxarifado()
-    # base.centro_custo()
+    base.cadunimedida()
+    base.grupo_e_subgrupo()
+    base.cadest()
+    base.almoxarifado()
+    base.centro_custo()
     solicitacoes.cadastro()
     cotacoes.cadastro()
     # cadastra_fornecedor()
