@@ -1,4 +1,5 @@
-from conexao import cur_fdb, commit
+from conexao import cur_fdb, commit, fetchallmap
+from tqdm import tqdm
 
 ANO = int(cur_fdb.execute("SELECT mexer FROM cadcli").fetchone()[0])
 EMPRESA = cur_fdb.execute("SELECT empresa FROM cadcli").fetchone()[0]
