@@ -14,4 +14,3 @@ def cadastro():
 
     if len(PRODUTOS) == 0:
         PRODUTOS = produtos()
-

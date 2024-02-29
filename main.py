@@ -6,16 +6,16 @@ from modulos.compras import cotacoes
 
 
 def main():
-    base.cadunimedida()
-    base.grupo_e_subgrupo()
-    base.cadest()
-    base.almoxarifado()
-    base.centro_custo()
+    # base.cadunimedida()
+    # base.grupo_e_subgrupo()
+    # base.cadest()
+    # base.almoxarifado()
+    # base.centro_custo()
     solicitacoes.cadastro()
-    # cotacoes.cadastro()
+    cotacoes.cadastro()
     # cadastra_fornecedor()
-    # # licitacao.cadlic()
-    licitacao.prolic()
+    # licitacao.cadlic()
+    # licitacao.prolic()
 
 
 if __name__ == '__main__':
