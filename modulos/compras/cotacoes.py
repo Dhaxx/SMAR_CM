@@ -10,6 +10,8 @@ PRODUTOS = produtos()
 def cadastro():
     print("Inserindo Cadastro de Cotações...")
 
+    cria_campo('ALTER TABLE CADORC ADD idant integer')
+
     global PRODUTOS
 
     if len(PRODUTOS) == 0:
@@ -29,7 +31,8 @@ def cadastro():
                                 codccusto,
                                 liberado_tela,
                                 empresa,
-                                registropreco) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""")
+                                registropreco, 
+                                idant) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""")
 
     insert_icadorc = cur_fdb.prep(
         'insert into icadorc (numorc, item, cadpro, qtd, valor, itemorc, codccusto, itemorc_ag, id_cadorc) values (?,'
@@ -215,10 +218,11 @@ def cadastro():
             codccusto = row['codccusto']
             liberado_tela = row['liberado_tela']
             registropreco = row['registropreco']
+            idant = row['numero']
 
             cur_fdb.execute(insert_cadorc, (
                 id_cadorc, num, ano, numorc, dtorc, descr, prioridade, obs, status, liberado, codccusto, liberado_tela,
-                EMPRESA, registropreco))
+                EMPRESA, registropreco, idant))
 
         item = row['item']
         codccusto = row['Requisitante']
@@ -231,10 +235,51 @@ def cadastro():
         cur_fdb.execute(insert_icadorc, (numorc, item, cadpro, qtd, valor, itemorc, codccusto, itemorc_ag, id_cadorc))
     commit()
 
+
 def fornecedores():
     print("Inserindo Fornecedores das Cotações ...")
+
+    registros = cur_sql.execute("""
+        select
+            c.idcotacao ,
+            f.codfor codif ,
+            substring(cn.desnom,1,70) nome,
+            sum(f.precounit * i.qtde) valor
+        from
+            mat.MCT79900 c
+        join mat.MCT80000 i on
+            i.idcotacao = c.idcotacao
+        join mat.MCT82100 f on
+            f.idcotacaoitem = i.idcotacaoitem
+        join mat.MXT60100 cf on
+            cf.codfor = f.codfor
+        join mat.MXT61400 cn on
+            cn.codnom = cf.codnom
+        where
+            year(data_cotacao) >= %d
+        GROUP by
+            c.idcotacao ,
+            f.codfor ,
+            cn.desnom
+    """ % (ANO - 1)).fetchall()
+
+    insert = cur_fdb.prep(
+        'insert into fcadorc(numorc,codif, nome, valorc, id_cadorc) values (?,?,?,?,?)')
+
+    dados = cur_fdb.execute("SELECT numorc, ID_CADORC , idant FROM CADORC c WHERE idant IS NOT null").fetchallmap()
+
+    for row in tqdm(registros):
+        filtro = next(x for x in dados if x['idant'] == row.idcotacao)
+        numorc = filtro['numorc']
+        codif = row.codif
+        nome = row.nome
+        valorc = row.valor
+        id_cadorc = filtro['id_cadorc']
+
+        cur_fdb.execute(insert, (numorc, codif, nome, valorc, id_cadorc))
+
+    commit()
 
 
 def valores():
     print("Inserindo Valores das Cotações ...")
-
