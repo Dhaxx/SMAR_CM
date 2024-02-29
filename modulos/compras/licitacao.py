@@ -357,4 +357,29 @@ def prolic():
 def cadprolic():
     print("Inserindo Itens...")
 
-    cur_sql.execute('')
+    consulta = fetchallmap('''select
+                            sigla codmod_ant,
+                            anoc ano,
+                            convit numpro,
+                            nuitem item,
+                            estrut+'.'+grupo+'.'+subgrp+'.'+itemat+'-'+digmat cadpro_ant,
+                            qtde qtd,
+                            valunit vamed1,
+                            valtot vatomed1,
+                            'N' reduz,
+                            'N' microempresa,
+                            '$' tlance,
+                            c.nivel1+'.'+c.nivel2+'.'+c.nivel3+'.' +c.nivel4+'.'+c.nivel5 centrocusto_ant,
+                            a.numreq numreq_ant,
+                            a.anoreq anoreq_ant,
+                            codgrupo codgrupo_ant,
+                            anogrupo anogrupo_ant
+                        from
+                            mat.MCT67700 a
+                        join mat.MCT63400 b on
+                            a.numreq = b.numreq
+                            and a.anoreq = b.anoreq
+                        join mat.MXT71100 c on c.IdNivel5 = b.Idnivel5 ''')
+    
+    
+    

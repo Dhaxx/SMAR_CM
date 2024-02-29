@@ -10,12 +10,12 @@ def main():
     # base.cadest()
     # base.almoxarifado()
     # base.centro_custo()
-    solicitacoes.cadastro()
-    cotacoes.cadastro()
+    # solicitacoes.cadastro()
+    # cotacoes.cadastro()
     # cadastra_fornecedor()
     # licitacao.cadlic()
-    # licitacao.prolic()
-
+    licitacao.prolic()
+    
 
 if __name__ == '__main__':
     main()
