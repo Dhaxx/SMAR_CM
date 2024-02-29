@@ -5,8 +5,7 @@ EMPRESA = cur_fdb.execute("SELECT empresa FROM cadcli").fetchone()[0]
 
 
 def extourou_codigo_item(grupo, subgrupo):
-    return \
-        cur_fdb.execute(
+    return cur_fdb.execute(
             f"select nome from cadsubgr where grupo = '{grupo}' and subgrupo_ant = '{subgrupo}'").fetchone()[0]
 
 

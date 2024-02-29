@@ -3,7 +3,8 @@ from ..tools import *
 from tqdm import tqdm
 
 PRODUTOS = produtos()
-LICITACAO = ...
+LICITACAO = licitacoes()
+NOME_FORNECEDOR, INSMF_FORNECEDOR = fornecedores()
 
 def cadlic():
     global LICITACAO
@@ -253,38 +254,107 @@ def cadlic():
                   SELECT L.NUMLIC, CAST(1 AS INTEGER), L.DTREAL, L.HORREAL, L.COMP, L.DTENC, L.HORENC, CAST('T' AS VARCHAR(1)), CAST('O' AS VARCHAR(1)) FROM CADLIC L 
                   WHERE numlic not in (SELECT FIRST 1 S.NUMLIC FROM CADLIC_SESSAO S WHERE S.NUMLIC = L.NUMLIC)''')
     commit()
-    LICITACAO = licitacoes() # Popula a constante com as chaves (numpro, sigla_ant, ano, registropreco) => numlic
+    LICITACAO = licitacoes() # Popula a constante com as chaves (numpro, sigla_ant, ano) => numlic
+    
+def prolic():
+    cur_fdb.execute('DELETE FROM PROLICS')
+    cur_fdb.execute('DELETE FROM PROLIC')
+    cria_campo('alter table prolics add codif_ant varchar(50)')
+    print("Inserindo Proponentes...")
+
+    i = 0
+    ignoradas = []
+
+    consulta = fetchallmap(f"""select
+                                    distinct *
+                                from
+                                    (
+                                    select
+                                        cast(convit as integer) numpro,
+                                        sigla sigla_ant,
+                                        anoc ano,
+                                        cast(codfor as integer) codif,
+                                        case
+                                            when selecao = 0 then 'D'
+                                            else 'A'
+                                        end status,
+                                        'N' usa_preferencia,
+                                        null nome_ant,
+                                        null insmf
+                                    from
+                                        mat.MCT70100
+                                union all
+                                    select
+                                        cast(convit as integer) numpro,
+                                        sigla sigla_ant,
+                                        anoc ano,
+                                        cast(codfor as integer) codif,
+                                        'A' status,
+                                        'N' usa_preferencia,
+                                        null nome_ant,
+                                        null insmf
+                                    from
+                                        mat.mct90400
+                                union all
+                                    select
+                                        cast(convit as integer) numpro,
+                                        sigla sigla_ant,
+                                        anoc ano,
+                                        NULL codif,
+                                        'A' status,
+                                        CASE
+                                            when direitoPreferencia = 1 then 'S'
+                                            else 'N'
+                                        END usa_preferencia,
+                                        substring(razao_social, 0, 40) nome_ant,
+                                        SUBSTRING(documento, 0, 19) insmf
+                                    from
+                                        mat.MCT81800 m
+                                    where
+                                        documento is not null
+                                union ALL
+                                    SELECT
+                                        cast(convit as integer) numpro,
+                                        sigla sigla_ant,
+                                        anoc ano,
+                                        cast(codfor as integer) codif,
+                                        'A' status,
+                                        CASE
+                                            when direitoPreferencia = 1 then 'S'
+                                            else 'N'
+                                        END usa_preferencia,
+                                        substring(razao_social, 0, 40) nome_ant,
+                                        SUBSTRING(documento, 0, 19) insmf
+                                    from
+                                        mat.MCT81800 m
+                                    where
+                                        codfor is not null
+                                        and codfor <> '') as query
+                                where
+                                    ano >= {ANO-5}""")
+    
+    insert_prolic = cur_fdb.prep('insert into prolic (codif, nome, status, numlic) values (?,?,?,?)')
+    insert_prolics = cur_fdb.prep('insert into prolics (sessao, codif, status, representante, numlic, usa_preferencia, codif_ant) values (?,?,?,?,?,?,?)')
+
+    for row in tqdm(consulta):
+        i += 1
+        codif = row['codif'] if row['codif'] is not None else INSMF_FORNECEDOR[row['insmf']]
+        nome = NOME_FORNECEDOR[codif]
+        status = row['status']
+        usa_preferencia = row['usa_preferencia']
+        codif_ant = row['codif']
+
+        try:
+            numlic = LICITACAO[(row['numpro'], row['sigla_ant'], row['ano'])]
+            cur_fdb.execute(insert_prolic,(codif, nome, status, numlic))
+            cur_fdb.execute(insert_prolics,(1,codif, status, nome, numlic, usa_preferencia,nome,codif_ant))
+        except Exception as e:
+            ignoradas.append((row['numpro'], row['sigla_ant'], row['ano']))
+        if i % 1000 == 0:
+            commit()
+    commit()
 
 def cadprolic():
     print("Inserindo Itens...")
 
-    
-def prolics():
-    print("Inserindo Proponentes...")
-
-    consulta = fetchallmap("""select
-                                    convit,
-                                    sigla,
-                                    anoc,
-                                    codfor,
-                                    case 
-                                        when selecao = 0 then 'D'
-                                        else 'A'
-                                    end status,
-                                    'N' regpreco
-                                from
-                                    mat.MCT70100
-                                union all
-                                select
-                                    convit,
-                                    sigla,
-                                    anoc,
-                                    codfor,
-                                    'A' status,
-                                    'S' regpreco
-                                from
-                                    mat.mct90400""")
-    
-    insert = cur_fdb.prep('insert into prolics (numlic, sessao, codif, representante, cpf, rg, habilitado, status, usa_preferencia) values (?,?,?,?,?,?,?,?,?)')
-
-    
+    cur_sql.execute('')
