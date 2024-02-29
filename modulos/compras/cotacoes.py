@@ -230,3 +230,11 @@ def cadastro():
 
         cur_fdb.execute(insert_icadorc, (numorc, item, cadpro, qtd, valor, itemorc, codccusto, itemorc_ag, id_cadorc))
     commit()
+
+def fornecedores():
+    print("Inserindo Fornecedores das Cotações ...")
+
+
+def valores():
+    print("Inserindo Valores das Cotações ...")
+
