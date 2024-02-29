@@ -1,7 +1,6 @@
 from modulos.compras import base
 from modulos.compras import solicitacoes
 from modulos.compras import licitacao
-from modulos.compras.base import cadastra_fornecedor
 from modulos.compras import cotacoes
 
 
