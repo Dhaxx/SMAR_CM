@@ -1,6 +1,7 @@
 from modulos.compras import base
 from modulos.compras import solicitacoes
 from modulos.compras import licitacao
+from modulos.compras.base import cadastra_fornecedor
 
 def main():
     # base.cadunimedida()
@@ -9,7 +10,9 @@ def main():
     # base.almoxarifado()
     # base.centro_custo()
     # solicitacoes.solicitacoes()
-    licitacao.cadlic()
+    # cadastra_fornecedor()
+    # licitacao.cadlic()
+    licitacao.prolic()
 
 if __name__ == '__main__':
     main()
