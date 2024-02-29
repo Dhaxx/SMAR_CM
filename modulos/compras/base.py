@@ -239,7 +239,22 @@ def centro_custo():
                             from
                                 mat.UnidOrcamentariaW
                             where
-                                ano = {ANO}""")
+                                ano = {ANO}
+                            union all                    
+                            select top 1
+                                substring(nivel1,2,4) poder,
+                                substring(nivel2,2,4)  orgao,
+                                substring(nivel3,2,4) unidade,
+                                'Conversão' descr,
+                                '' placa,
+                                'N' ocultar,
+                                0 codccusto,
+                                '0' cod_ant
+                            from
+                                mat.UnidOrcamentariaW
+                            where
+                                ano = {ANO}
+    """)
 
     insert = cur_fdb.prep("""insert
                                 into

@@ -34,6 +34,10 @@ def produtos():
 
 
 def licitacoes():
+    cria_campo('ALTER TABLE CADLIC ADD criterio_ant varchar(30)')
+    cria_campo('ALTER TABLE CADLIC ADD sigla_ant varchar(2)')
+    cria_campo('ALTER TABLE CADLIC ADD status_ant varchar(1)')
+
     cur_fdb.execute("select numpro, sigla_ant, ano, registropreco, numlic from cadlic")
 
     hash_map = {}
