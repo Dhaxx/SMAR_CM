@@ -283,3 +283,5 @@ def fornecedores():
 
 def valores():
     print("Inserindo Valores das Cotações ...")
+
+
