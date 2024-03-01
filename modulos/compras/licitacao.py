@@ -1351,11 +1351,11 @@ def cadpro():
     
     cur_fdb.execute(f"""insert into cadprolic_detalhe_fic (numlic, item, codigo, qtd, valor, qtdadt, valoradt, codccusto, qtdmed, valormed, tipo) 
                      select numlic, item, '0', quan1, vato1, qtdadt, vatoadt, codccusto, quan1, vato1, 'C' from cadpro where numlic in 
-                     (select numlic from cadlic where registropreco='N' and liberacompra='S' {f'AND NUMLIC > {numlic}' if numlic else ''}) and subem=1;""")
+                     (select numlic from cadlic where registropreco='N' and liberacompra='S' and subem=1;""")
     
     cur_fdb.execute(f"""insert into cadprolic_detalhe_fic (numlic, item, codigo, qtd, valor, qtdadt, valoradt, codccusto, qtdmed, valormed, tipo)
                      select numlic, item, '0', quan1, vato1, quan1, vato1, codccusto, quan1, vato1, 'C' from regpreco where numlic in 
-                     (select numlic from cadlic where registropreco='S' and liberacompra='S' {f'AND NUMLIC > {numlic}' if numlic else ''}) and subem=1;""")
+                     (select numlic from cadlic where registropreco='S' and liberacompra='S' and subem=1;""")
     commit()
 
 def regpreco():

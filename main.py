@@ -18,7 +18,7 @@ def main():
     # tools.cadastra_fornecedor()
     # licitacao.cadlic()
     # licitacao.prolic_prolics()
-    licitacao.cadprolic() # Esperar a cotação
+    # licitacao.cadprolic() # Esperar a cotação
     licitacao.cadpro_proposta() # Esperar a cotação
     licitacao.cadpro_lance() # Esperar a cotação
     licitacao.cadpro_final() # Esperar a cotação
