@@ -5,6 +5,7 @@ from tqdm import tqdm
 PRODUTOS = produtos()
 LICITACAO = licitacoes()
 NOME_FORNECEDOR, INSMF_FORNECEDOR = fornecedores()
+COTACAO = cotacoes()
 
 def cadlic():
     global LICITACAO
@@ -253,7 +254,50 @@ def cadlic():
                   WHERE numlic not in (SELECT FIRST 1 S.NUMLIC FROM CADLIC_SESSAO S WHERE S.NUMLIC = L.NUMLIC)''')
     commit()
     LICITACAO = licitacoes() # Popula a constante com as chaves (numpro, sigla_ant, ano) => numlic
-    
+
+def cadprolic():
+    # cria_campo('ALTER TABLE VCADORC ADD numlic varchar(10)')
+    cria_campo('ALTER TABLE ICADORC ADD numlic varchar(10)')
+    vincula_cotacao_licitacao()
+    print("Inserindo Itens...")
+    # cur_fdb.execute('UPDATE VCADORC a SET a.numlic = (SELECT b.numlic FROM cadorc b WHERE a.NUMORC=b.numorc AND b.numlic IS NOT null)')
+    cur_fdb.execute('UPDATE ICADORC a SET a.numlic = (SELECT b.numlic FROM cadorc b WHERE a.NUMORC=b.numorc AND b.numlic IS NOT null)')
+
+    cur_fdb.execute("""INSERT
+                            INTO
+                            cadprolic (item,
+                            item_mask,
+                            numorc,
+                            cadpro,
+                            quan1,
+                            vamed1,
+                            vatomed1,
+                            codccusto,
+                            reduz,
+                            numlic,
+                            microempresa,
+                            tlance,
+                            item_ag,
+                            id_cadorc)
+                        VALUES
+                        SELECT
+                            item,
+                            item,
+                            cadpro,
+                            qtd,
+                            valor,
+                            qtd * valor,
+                            CODCCUSTO,
+                            'N',
+                            numlic,
+                            'N',
+                            '$',
+                            ITEMORC_AG,
+                            ID_CADORC
+                        FROM
+                            iCADORC c """)
+    commit()
+
 def prolic_prolics():
     cur_fdb.execute('DELETE FROM PROLICS')
     cur_fdb.execute('DELETE FROM PROLIC')
@@ -353,36 +397,6 @@ def prolic_prolics():
         if i % 1000 == 0:
             commit()
     commit()
-
-def cadprolic():
-    print("Inserindo Itens...")
-
-    consulta = fetchallmap('''select
-                            sigla codmod_ant,
-                            anoc ano,
-                            convit numpro,
-                            nuitem item,
-                            estrut+'.'+grupo+'.'+subgrp+'.'+itemat+'-'+digmat cadpro_ant,
-                            qtde qtd,
-                            valunit vamed1,
-                            valtot vatomed1,
-                            'N' reduz,
-                            'N' microempresa,
-                            '$' tlance,
-                            c.nivel1+'.'+c.nivel2+'.'+c.nivel3+'.' +c.nivel4+'.'+c.nivel5 centrocusto_ant,
-                            a.numreq numreq_ant,
-                            a.anoreq anoreq_ant,
-                            codgrupo codgrupo_ant,
-                            anogrupo anogrupo_ant
-                        from
-                            mat.MCT67700 a
-                        join mat.MCT63400 b on
-                            a.numreq = b.numreq
-                            and a.anoreq = b.anoreq
-                        join mat.MXT71100 c on c.IdNivel5 = b.Idnivel5 ''')
-    
-    for row in tqdm(consulta):
-        ...
 
 def cadpro_status():
     cur_fdb.execute('DELETE FROM CADPRO_STATUS')
@@ -1379,4 +1393,51 @@ def regpreco():
                         AND NOT EXISTS(SELECT 1 FROM REGPRECOHIS X  
                         WHERE X.NUMLIC = B.NUMLIC AND X.CODIF = B.CODIF AND X.CADPRO = B.CADPRO AND X.CODCCUSTO = B.CODCCUSTO AND X.ITEM = B.ITEM);  
                         END;""")
+    commit()
+
+def vincula_cotacao_licitacao():
+    print('Inserindo Itens...')
+
+    consulta = fetchallmap("""
+                            select
+                                anogrupo,
+                                cast(codgrupo as varchar) codgrupo,
+                                convit,
+                                sigla,
+                                anoc,
+                                'S' registropreco,
+                                RIGHT('000000'+cast(convit as varchar),6)+'/'+SUBSTRING(anoc,3,2) proclic 
+                            from
+                                mat.MCT91200
+                            where
+                                anogrupo >= 2019
+                                and convit is not null
+                                --Agrupamento RP
+                            union all
+                            select
+                                anogrupo,
+                                cast(codgrupo as varchar) codgrupo,
+                                convit,
+                                sigla,
+                                anoc,
+                                'N' registropreco,
+                                RIGHT('000000'+cast(convit as varchar),6)+'/'+SUBSTRING(anoc,3,2) proclic
+                            from
+                                mat.MCT80200
+                            where
+                                anogrupo >= 2019
+                                and convit is not null
+                                --Agrupamento
+                            order by
+                                anogrupo,
+                                codgrupo
+                            """)
+    
+    update = cur_fdb.prep('Update cadorc set numlic = ?, proclic = ? where numorc = ?')
+    
+    for row in tqdm(consulta):
+        numlic = LICITACAO[(row['convit'], row['sigla'], row['anoc'], row['registropreco'])]
+        numorc = COTACAO[(row['codgrupo'], row['anoc'], row['registropreco'])]
+
+        cur_fdb.execute(update,(numlic,row['proclic'],numorc))
     commit()

@@ -54,7 +54,7 @@ def cadastro():
         'L' liberado_tela,
         case cabecalho.origem when 'R' then 'S' else 'N' end registropreco,
                 [item] = ROW_NUMBER() over(PARTITION by cabecalho.idcotacao order by cabecalho.idcotacao , item.nuitem),
-                [itemorc_ag] = item.nuitem,
+                [itemorc_ag] = itemgr.nuitem,
                 [Requisitante] = coalesce(cabreq.Idnivel5,0) ,
                 [cadpro] = produto.estrut + '.' + produto.grupo + '.' + produto.subgrp + '.' + produto.itemat + '-' + produto.digmat,
                 [Quantidade] = coalesce(itemgr.quantid, item.qtde)  ,
@@ -127,7 +127,7 @@ def cadastro():
         'L' liberado_tela,
         case cabecalho.origem when 'R' then 'S' else 'N' end registropreco,
                 [item] = ROW_NUMBER() over(PARTITION by cabecalho.idcotacao order by cabecalho.idcotacao , item.nuitem),
-                [itemorc_ag] = item.nuitem,
+                [itemorc_ag] = itemgr.nuitem,
                 [Requisitante] = coalesce(cabreq.Idnivel5,0) ,
                 [cadpro] = produto.estrut + '.' + produto.grupo + '.' + produto.subgrp + '.' + produto.itemat + '-' + produto.digmat,
                 [Quantidade] = coalesce(itemgr.quantid, item.qtde)  ,
@@ -184,10 +184,10 @@ def cadastro():
                                             AND produto.digmat = item.digmat
         left join mat.MCT90000 cabreq on cabreq.unges  = cabecalho.unges  and cabreq.anoreg  = cabecalho.anoreq and cabreq.numreg  = cabecalho.numreq                                  
         where year(data_cotacao) >= %d and cabecalho.origem = 'R' and cabecalho.numreq is not null
-        ORDER by cabecalho.idcotacao , item.nuitem
-    """ % (ANO - 1, ANO - 1, ANO - 1, ANO - 1))
+        ORDER by cabecalho.idcotacao , itemgr.nuitem
+    """ % (ANO - 5, ANO - 5, ANO - 5, ANO - 5))
 
-    id_cadorc = get_fetchone("SELECT max(id_cadorc) FROM cadorc")
+    id_cadorc = get_fetchone("SELECT coalesce(max(id_cadorc),0) FROM cadorc")
     ano_atual = 0
     chave_atual = 0
     numero = 0
@@ -261,7 +261,7 @@ def fornecedores():
             c.idcotacao ,
             f.codfor ,
             cn.desnom
-    """ % (ANO - 1)).fetchall()
+    """ % (ANO - 5)).fetchall()
 
     insert = cur_fdb.prep(
         'insert into fcadorc(numorc,codif, nome, valorc, id_cadorc) values (?,?,?,?,?)')
