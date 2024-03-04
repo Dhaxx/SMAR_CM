@@ -300,8 +300,8 @@ def cadprolic():
                             id_cadorc) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""")
     
     for row in tqdm(consulta.fetchallmap()):
-        item = row['item']
-        item_mask = row['item']
+        item = row['itemorc_ag']
+        item_mask = row['itemorc_ag']
         numorc = row['numorc']
         cadpro = row['cadpro']
         quan1 = row['qtd']
@@ -312,10 +312,11 @@ def cadprolic():
         numlic = row['numlic']
         microempresa = row['microempresa']
         tlance = row['tlance']
-        itemorc_ag = row['itemorc_ag']
+        item_ag = row['itemorc_ag']
         id_cadorc = row['id_cadorc']
 
-        cur_fdb.execute(insert,(item, item_mask, numorc, cadpro, quan1, vamed1, vatomed1, codccusto, reduz, numlic, microempresa, tlance, itemorc_ag, id_cadorc))
+        cur_fdb.execute(insert,(item, item_mask, numorc, cadpro, quan1, vamed1, vatomed1, codccusto, reduz, numlic, microempresa, tlance, item_ag, id_cadorc))
+    cur_fdb.execute()
     commit()
 
 def prolic_prolics():
