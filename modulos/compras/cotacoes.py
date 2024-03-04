@@ -8,6 +8,8 @@ PRODUTOS = produtos()
 
 
 def cadastro():
+    cur_fdb.execute('Delete from icadorc')
+    cur_fdb.execute('Delete from cadorc')
     print("Inserindo Cadastro de Cotações...")
 
     cria_campo('ALTER TABLE CADORC ADD idant integer')
@@ -239,6 +241,7 @@ def cadastro():
 def fornecedores():
     cur_fdb.execute('delete from fcadorc')
     print("Inserindo Fornecedores das Cotações ...")
+    filtro = {}
 
     registros = cur_sql.execute("""
         select
@@ -269,13 +272,16 @@ def fornecedores():
 
     dados = cur_fdb.execute("SELECT numorc, ID_CADORC , idant FROM CADORC c WHERE idant IS NOT null").fetchallmap()
 
+    for row in dados:
+        filtro[row['idant']] = (row['numorc'], row['ID_CADORC'])
+
     for row in tqdm(registros):
-        filtro = next(x for x in dados if x['idant'] == row.idcotacao)
-        numorc = filtro['numorc']
+        # filtro = next(x for x in dados if x['idant'] == row.idcotacao)
+        numorc = filtro[row.idcotacao][0]  #filtro['numorc']
         codif = row.codif
         nome = row.nome
         valorc = row.valor
-        id_cadorc = filtro['id_cadorc']
+        id_cadorc = filtro[row.idcotacao][1]  # filtro['id_cadorc']
 
         cur_fdb.execute(insert, (numorc, codif, nome, valorc, id_cadorc))
 

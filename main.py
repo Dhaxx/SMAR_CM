@@ -13,7 +13,7 @@ def main():
     # base.centro_custo()
     # solicitacoes.cadastro()
     # cotacoes.cadastro()
-    # cotacoes.fornecedores()
+    cotacoes.fornecedores()
     # cotacoes.valores()
     # tools.cadastra_fornecedor()
     # licitacao.cadlic()
