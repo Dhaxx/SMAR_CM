@@ -34,7 +34,7 @@ def produtos():
     return hash_map
 
 def cotacoes():
-    cur_fdb.execute("select numorc, ano, obs, registropreco from cadorc")
+    cur_fdb.execute("select numorc, ano, obs, registropreco from cadorc where obs starting 'Agrupamento'")
 
     hash_map = {}
 

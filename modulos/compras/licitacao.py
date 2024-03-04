@@ -256,14 +256,33 @@ def cadlic():
     LICITACAO = licitacoes() # Popula a constante com as chaves (numpro, sigla_ant, ano) => numlic
 
 def cadprolic():
-    # cria_campo('ALTER TABLE VCADORC ADD numlic varchar(10)')
+    cur_fdb.execute('DELETE FROM CADPROLIC')
     cria_campo('ALTER TABLE ICADORC ADD numlic varchar(10)')
     vincula_cotacao_licitacao()
-    print("Inserindo Itens...")
+    # cria_campo('ALTER TABLE VCADORC ADD numlic varchar(10)')
     # cur_fdb.execute('UPDATE VCADORC a SET a.numlic = (SELECT b.numlic FROM cadorc b WHERE a.NUMORC=b.numorc AND b.numlic IS NOT null)')
     cur_fdb.execute('UPDATE ICADORC a SET a.numlic = (SELECT b.numlic FROM cadorc b WHERE a.NUMORC=b.numorc AND b.numlic IS NOT null)')
+    commit()
 
-    cur_fdb.execute("""INSERT
+    consulta = cur_fdb.execute("""SELECT
+                            item,
+                            item,
+                            numorc,
+                            cadpro,
+                            qtd,
+                            valor,
+                            qtd * valor total,
+                            CODCCUSTO,
+                            'N' reduz,
+                            numlic,
+                            'N' microempresa,
+                            '$' tlance,
+                            ITEMORC_AG,
+                            ID_CADORC
+                        FROM
+                            iCADORC c where numlic is not null""")
+    
+    insert = cur_fdb.prep("""INSERT
                             INTO
                             cadprolic (item,
                             item_mask,
@@ -278,24 +297,25 @@ def cadprolic():
                             microempresa,
                             tlance,
                             item_ag,
-                            id_cadorc)
-                        VALUES
-                        SELECT
-                            item,
-                            item,
-                            cadpro,
-                            qtd,
-                            valor,
-                            qtd * valor,
-                            CODCCUSTO,
-                            'N',
-                            numlic,
-                            'N',
-                            '$',
-                            ITEMORC_AG,
-                            ID_CADORC
-                        FROM
-                            iCADORC c """)
+                            id_cadorc) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""")
+    
+    for row in tqdm(consulta.fetchallmap()):
+        item = row['item']
+        item_mask = row['item']
+        numorc = row['numorc']
+        cadpro = row['cadpro']
+        quan1 = row['qtd']
+        vamed1 = row['valor']
+        vatomed1 = row['total']
+        codccusto = row['codccusto']
+        reduz = row['reduz']
+        numlic = row['numlic']
+        microempresa = row['microempresa']
+        tlance = row['tlance']
+        itemorc_ag = row['itemorc_ag']
+        id_cadorc = row['id_cadorc']
+
+        cur_fdb.execute(insert,(item, item_mask, numorc, cadpro, quan1, vamed1, vatomed1, codccusto, reduz, numlic, microempresa, tlance, itemorc_ag, id_cadorc))
     commit()
 
 def prolic_prolics():
@@ -1437,7 +1457,9 @@ def vincula_cotacao_licitacao():
     
     for row in tqdm(consulta):
         numlic = LICITACAO[(row['convit'], row['sigla'], row['anoc'], row['registropreco'])]
-        numorc = COTACAO[(row['codgrupo'], row['anoc'], row['registropreco'])]
-
-        cur_fdb.execute(update,(numlic,row['proclic'],numorc))
+        try:
+            numorc = COTACAO[(row['codgrupo'], row['anoc'], row['registropreco'])]
+            cur_fdb.execute(update,(numlic,row['proclic'],numorc))
+        except:
+            continue
     commit()

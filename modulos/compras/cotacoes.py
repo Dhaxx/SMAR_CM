@@ -53,7 +53,7 @@ def cadastro():
         coalesce(cabreq.Idnivel5,0) codccusto,
         'L' liberado_tela,
         case cabecalho.origem when 'R' then 'S' else 'N' end registropreco,
-                [item] = ROW_NUMBER() over(PARTITION by cabecalho.idcotacao order by cabecalho.idcotacao , item.nuitem),
+                [item] = ROW_NUMBER() over(PARTITION by cabecalho.idcotacao order by cabecalho.idcotacao , itemgr.nuitem),
                 [itemorc_ag] = itemgr.nuitem,
                 [Requisitante] = coalesce(cabreq.Idnivel5,0) ,
                 [cadpro] = produto.estrut + '.' + produto.grupo + '.' + produto.subgrp + '.' + produto.itemat + '-' + produto.digmat,
@@ -126,7 +126,7 @@ def cadastro():
         coalesce(cabreq.Idnivel5,0) codccusto,
         'L' liberado_tela,
         case cabecalho.origem when 'R' then 'S' else 'N' end registropreco,
-                [item] = ROW_NUMBER() over(PARTITION by cabecalho.idcotacao order by cabecalho.idcotacao , item.nuitem),
+                [item] = ROW_NUMBER() over(PARTITION by cabecalho.idcotacao order by cabecalho.idcotacao , itemgr.nuitem),
                 [itemorc_ag] = itemgr.nuitem,
                 [Requisitante] = coalesce(cabreq.Idnivel5,0) ,
                 [cadpro] = produto.estrut + '.' + produto.grupo + '.' + produto.subgrp + '.' + produto.itemat + '-' + produto.digmat,
@@ -237,6 +237,7 @@ def cadastro():
 
 
 def fornecedores():
+    cur_fdb.execute('delete from fcadorc')
     print("Inserindo Fornecedores das Cotações ...")
 
     registros = cur_sql.execute("""
