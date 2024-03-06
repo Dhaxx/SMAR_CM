@@ -116,7 +116,8 @@ def cadlic():
                                             WHEN status IN ('D') THEN 5
                                             WHEN status IN ('H', 'X', 'P') THEN 3
                                             WHEN status in ('U') THEN 8
-                                            ELSE 2
+                                            WHEN status IN ('A') THEN 2
+                                            ELSE 1
                                         END comp,
                                         anoc ano,
                                         'N' registropreco,
@@ -142,7 +143,7 @@ def cadlic():
                                         status status_ant
                                     FROM
                                         MAT.MCT67600
-                                    WHERE anoc BETWEEN {ANO-5} and {ANO} --anoc >= {ANO}
+                                    WHERE anoc BETWEEN {ANO-2} and {ANO} --anoc >= {ANO}
                                 union ALL 
                                 SELECT
                                         convit numpro,
@@ -186,7 +187,8 @@ def cadlic():
                                             WHEN status IN ('D') THEN 5
                                             WHEN status IN ('H', 'X', 'P') THEN 3
                                             WHEN status in ('U') THEN 8
-                                            ELSE 2
+                                            WHEN status IN ('A') THEN 2
+                                            ELSE 1
                                         END comp,
                                         anoc ano,
                                         'S' registropreco,
@@ -210,7 +212,7 @@ def cadlic():
                                         CriterioAceitabilidade criterio_ant,
                                         sigla sigla_ant,
                                         status status_ant
-                                    FROM mat.MCT91400 where anoc between {ANO-5} and {ANO} --anoc >= {ANO}
+                                    FROM mat.MCT91400 where anoc between {ANO-2} and {ANO} --anoc >= {ANO}
                                 ) AS subconsulta
                                 ORDER BY proclic, ANO;""")
     
@@ -403,7 +405,7 @@ def prolic_prolics():
                                         codfor is not null
                                         and codfor <> '') as query
                                 where
-                                    ano >= {ANO-5}""")
+                                    ano >= {ANO-2}""")
     
     
 
@@ -453,6 +455,7 @@ def cadpro_status():
 
         cur_fdb.execute(insert,(numlic, '1', itemp, item))
     cur_fdb.execute("update cadlic set liberacompra = 'S' where comp = 3 and status_ant in ('X','H','P')")
+    cur_fdb.execute("update cadlic set liberacompra = 'N' where comp = 3 and status_ant in ('A')")
     commit()
 
 def cadpro_proposta():
@@ -566,7 +569,7 @@ def cadpro_proposta():
                                         c934.IdLote = c803.idLote
                                     LEFT JOIN mat.MCT07200 c072 ON
                                         c072.idfornecedor = c698.idMCT072
-                                    where c697.anoc >= {ANO-5}
+                                    where c697.anoc >= {ANO-2}
                                     GROUP BY
                                         c697.IdProcCompra,
                                         c697.unges,
@@ -696,7 +699,7 @@ def cadpro_proposta():
                                         c934.IdLote = c913.idLote
                                     LEFT JOIN mat.MCT07200 c072 ON
                                         c072.idfornecedor = c905.idMCT072
-                                    where c905.anoc >= {ANO-5}
+                                    where c905.anoc >= {ANO-2}
                                     GROUP BY
                                         c905.unges,
                                         c905.sigla,
