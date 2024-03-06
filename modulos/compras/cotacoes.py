@@ -523,7 +523,7 @@ def valores():
 
     conexao_fdb.commit()
 
-    print("Alterando Valores na ICadOrc_Cot")
+    print("Alterando Valores na ICadOrc_Cot...")
 
     cur_fdb.execute(
         """update icadorc_cot c
