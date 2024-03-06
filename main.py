@@ -1,20 +1,21 @@
 from modulos.compras import base
 from modulos.compras import solicitacoes
-# from modulos.compras import licitacao
+from modulos.compras import licitacao
 from modulos.compras import cotacoes
 from modulos import tools
 
 
 def main():
-    base.cadunimedida()
-    base.grupo_e_subgrupo()
-    base.cadest()
-    base.almoxarifado()
-    base.centro_custo()
-    solicitacoes.cadastro()
-    cotacoes.cadastro()
-    cotacoes.fornecedores()
-    cotacoes.valores()
+    # base.cadunimedida()
+    # base.grupo_e_subgrupo()
+    # base.cadest()
+    # base.almoxarifado()
+    # base.centro_custo()
+    # solicitacoes.cadastro()
+    # cotacoes.cadastro()
+    tools.ajustar_ccusto_cotacao()
+    # cotacoes.fornecedores()
+    # cotacoes.valores()
     # tools.cadastra_fornecedor()
     # licitacao.cadlic()
     # licitacao.cadprolic()

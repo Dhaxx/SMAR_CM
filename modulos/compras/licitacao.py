@@ -111,9 +111,12 @@ def cadlic():
                                         dtPublicacaoHomologacao dthom,
                                         dataadjudicacao dtadj,
                                         CASE 
-                                            --WHEN status IN ('C','R','F','D','H','X','P','O') THEN 3
-                                            WHEN status IN ('E') THEN 2
-                                            ELSE 3
+                                            WHEN status IN ('R') THEN 7
+                                            WHEN status IN ('F', 'C') THEN 6
+                                            WHEN status IN ('D') THEN 5
+                                            WHEN status IN ('H', 'X', 'P') THEN 3
+                                            WHEN status in ('U') THEN 8
+                                            ELSE 2
                                         END comp,
                                         anoc ano,
                                         'N' registropreco,
@@ -124,7 +127,7 @@ def cadlic():
                                         END obra,
                                         idagenda numlic,
                                         CASE 
-                                            WHEN status = 'H' THEN 'S'
+                                            WHEN status IN ('H','X','P') THEN 'S'
                                             ELSE NULL
                                         END liberacompra,
                                         2 microempresa,
@@ -178,9 +181,12 @@ def cadlic():
                                         dtPublicacaoHomologacao dthom,
                                         dataadjudicacao dtadj,
                                         CASE 
-                                            --WHEN status IN ('C','R','F','D','H','X','P','O') THEN 3
-                                            WHEN status IN ('E') THEN 2
-                                            ELSE 3
+                                            WHEN status IN ('R') THEN 7
+                                            WHEN status IN ('F', 'C') THEN 6
+                                            WHEN status IN ('D') THEN 5
+                                            WHEN status IN ('H', 'X', 'P') THEN 3
+                                            WHEN status in ('U') THEN 8
+                                            ELSE 2
                                         END comp,
                                         anoc ano,
                                         'S' registropreco,
@@ -191,7 +197,7 @@ def cadlic():
                                         END obra,
                                         idagendaRP numlic,
                                         CASE 
-                                            WHEN status = 'H' THEN 'S'
+                                            WHEN status IN ('H','X','P') THEN 'S'
                                             ELSE NULL
                                         END liberacompra,
                                         2 microempresa,
@@ -299,6 +305,8 @@ def cadprolic():
                             item_ag,
                             id_cadorc) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""")
     
+    insert_det = cur_fdb.prep("""INSERT INTO CADPROLIC_DETALHE (NUMLIC,item,CADPRO,quan1,VAMED1,VATOMED1,marca,CODCCUSTO,ITEM_CADPROLIC) values (?,?,?,?,?,?,?,?,?)""")
+    
     for row in tqdm(consulta.fetchallmap()):
         item = row['itemorc_ag']
         item_mask = row['itemorc_ag']
@@ -314,9 +322,10 @@ def cadprolic():
         tlance = row['tlance']
         item_ag = row['itemorc_ag']
         id_cadorc = row['id_cadorc']
+        marca = None
 
         cur_fdb.execute(insert,(item, item_mask, numorc, cadpro, quan1, vamed1, vatomed1, codccusto, reduz, numlic, microempresa, tlance, item_ag, id_cadorc))
-    cur_fdb.execute()
+        cur_fdb.execute(insert_det,(numlic, item_ag, cadpro, quan1, vamed1, vatomed1, marca, codccusto, item))
     commit()
 
 def prolic_prolics():
@@ -421,13 +430,14 @@ def prolic_prolics():
 
 def cadpro_status():
     cur_fdb.execute('DELETE FROM CADPRO_STATUS')
+    print('Inserindo Stauts...')
 
     consulta = cur_fdb.execute("""SELECT
                                     1 sessao,
                                     a.LOTELIC,
                                     item,
                                     CASE WHEN b.COMP = 3 THEN 'I_ENCERRAMENTO' ELSE NULL END AS TELAFINAL,
-                                    CASE WHEN b.COMP = 3 AND b.STATUS_ANT IN ('X','H','A','P') THEN 'S' ELSE 'N' END AS ACEITO,
+                                    CASE WHEN b.COMP = 3 THEN 'S' ELSE NULL END AS ACEITO,
                                     b.NUMLIC 
                                 FROM
                                     CADPROLIC a
@@ -442,550 +452,26 @@ def cadpro_status():
         item = row['item']
 
         cur_fdb.execute(insert,(numlic, '1', itemp, item))
+    cur_fdb.execute("update cadlic set liberacompra = 'S' where comp = 3 and status_ant in ('X','H','P')")
     commit()
 
 def cadpro_proposta():
+    cur_fdb.execute('DELETE FROM cadpro_proposta')
+    commit()
     print('Inserindo Propostas...')
 
-    ####### SELECT DA PROPOSTA VERSÃO NORMAL
-    # consulta = fetchallmap(f"""select
-    #                                 1 sessao,
-    #                                 codfor codif,
-    #                                 nuitem itemp,
-    #                                 qtde quan1,
-    #                                 preco vaun1,
-    #                                 total vato1,
-    #                                 case when venc is null then 'D' else 'C' end as status,
-    #                                 venc subem,
-    #                                 marca,
-    #                                 insmf,
-    #                                 right('00000000'+cast(nrolote as varchar),8) lotelic,
-    #                                 sigla sigla_ant,
-    #                                 convit numpro,
-    #                                 anoc ano,
-    #                                 'N' registropreco
-    #                             from
-    #                                 (
-    #                                 SELECT
-    #                                     c697.IdProcCompra,
-    #                                     c697.unges,
-    #                                     c697.sigla,
-    #                                     c697.convit,
-    #                                     c697.anoc,
-    #                                     c803.idlote,
-    #                                     nrolote = CASE
-    #                                         WHEN c803.idLote IS NULL THEN c698.nuitem
-    #                                         ELSE c934.NroLote
-    #                                     END,
-    #                                     descricao = CASE
-    #                                         WHEN c803.idLote IS NULL THEN 'Lote ' + RTRIM(c698.nuitem)
-    #                                         ELSE c934.Descricao
-    #                                     END,
-    #                                     estrut = CASE
-    #                                         WHEN c812.estrut_atu IS NULL THEN c698.estrut
-    #                                         ELSE c812.estrut_atu
-    #                                     END,
-    #                                     grupo = CASE
-    #                                         WHEN c812.grupo_atu IS NULL THEN c698.grupo
-    #                                         ELSE c812.grupo_atu
-    #                                     END,
-    #                                     subgrp = CASE
-    #                                         WHEN c812.subgrp_atu IS NULL THEN c698.subgrp
-    #                                         ELSE c812.subgrp_atu
-    #                                     END,
-    #                                     itemat = CASE
-    #                                         WHEN c812.itemat_atu IS NULL THEN c698.itemat
-    #                                         ELSE c812.itemat_atu
-    #                                     END,
-    #                                     digmat = CASE
-    #                                         WHEN c812.digmat_atu IS NULL THEN c698.digmat
-    #                                         ELSE c812.digmat_atu
-    #                                     END,
-    #                                     codfor = c698.codfor,
-    #                                     c698.codfor_representante,
-    #                                     c698.venc,
-    #                                     c698.empate,
-    #                                     c698.preco,
-    #                                     c698.marca,
-    #                                     c698.valid,
-    #                                     c698.prazo,
-    #                                     c698.pgto,
-    #                                     c698.nuitem,
-    #                                     c698.garantia,
-    #                                     qtde = SUM(C803.quantid),
-    #                                     total = SUM(ROUND(C803.quantid * c698.preco, 2)),
-    #                                     insmf = c072.nrcpfcnpj
-    #                                 FROM
-    #                                     mat.MCT69700 c697
-    #                                 INNER JOIN mat.MCT69800 c698 ON
-    #                                     c698.IdProcCompra = c697.IdProcCompra
-    #                                 INNER JOIN mat.MCT80200 c802 ON
-    #                                     C802.convit = c697.convit
-    #                                     AND C802.sigla = c697.sigla
-    #                                     AND C802.anoc = c697.anoc
-    #                                     AND C802.unges = c697.unges
-    #                                     AND c802.aditivo = 0
-    #                                 INNER JOIN mat.MCT80300 c803 ON
-    #                                     C803.codgrupo = C802.codgrupo
-    #                                     AND C803.anogrupo = C802.anogrupo
-    #                                     AND C803.unges = C802.unges
-    #                                     AND C803.estrut = c698.estrut
-    #                                     AND C803.grupo = c698.grupo
-    #                                     AND C803.subgrp = c698.subgrp
-    #                                     AND C803.itemat = c698.itemat
-    #                                     AND C803.digmat = c698.digmat
-    #                                     AND ISNULL(c803.idLote,
-    #                                     0) = ISNULL(c698.idLote,
-    #                                     0)
-    #                                 LEFT JOIN mat.MCT81200 c812 ON
-    #                                     c812.unges = c697.unges
-    #                                     AND c812.sigla = c697.sigla
-    #                                     AND c812.anoc = c697.anoc
-    #                                     AND c812.convit = c697.convit
-    #                                     AND c812.codfor = c698.codfor
-    #                                     AND c812.estrut_ant = c698.estrut
-    #                                     AND c812.grupo_ant = c698.grupo
-    #                                     AND c812.subgrp_ant = c698.subgrp
-    #                                     AND c812.itemat_ant = c698.itemat
-    #                                     AND c812.digmat_ant = c698.digmat
-    #                                 LEFT JOIN mat.MCT93400 c934 ON
-    #                                     c934.IdLote = c803.idLote
-    #                                 LEFT JOIN mat.MCT07200 c072 ON
-    #                                     c072.idfornecedor = c698.idMCT072
-    #                                 where c697.anoc >= 2019
-    #                                 GROUP BY
-    #                                     c697.IdProcCompra,
-    #                                     c697.unges,
-    #                                     c697.sigla,
-    #                                     c697.convit,
-    #                                     c697.anoc,
-    #                                     c812.estrut_atu,
-    #                                     c812.grupo_atu,
-    #                                     c812.subgrp_atu,
-    #                                     c812.itemat_atu,
-    #                                     c812.digmat_atu,
-    #                                     c698.estrut,
-    #                                     c698.grupo,
-    #                                     c698.subgrp,
-    #                                     c698.itemat,
-    #                                     c698.digmat,
-    #                                     c698.codfor,
-    #                                     c698.venc,
-    #                                     c698.empate,
-    #                                     c698.preco,
-    #                                     c698.marca,
-    #                                     c698.valid,
-    #                                     c698.prazo,
-    #                                     c698.pgto,
-    #                                     c698.nuitem,
-    #                                     c698.garantia,
-    #                                     c803.idlote,
-    #                                     c934.nrolote,
-    #                                     c934.descricao,
-    #                                     c698.codfor_representante,
-    #                                     c072.nrcpfcnpj) as query
-    #                             Union all
-    #                             select
-    #                                 1 sessao,
-    #                                 codfor codif,
-    #                                 nuitem itemp,
-    #                                 qtde quan1,
-    #                                 preco vaun1,
-    #                                 total vato1,
-    #                                 case when class is null then 'D' else 'C' end as status,
-    #                                 class subem,
-    #                                 marca,
-    #                                 insmf,
-    #                                 right('00000000'+cast(nrolote as varchar),8) lotelic,
-    #                                 sigla sigla_ant,
-    #                                 convit numpro,
-    #                                 anoc ano,
-    #                                 'S' registropreco
-    #                             from
-    #                                 (
-    #                                 SELECT
-    #                                     c905.unges,
-    #                                     c905.sigla,
-    #                                     c905.convit,
-    #                                     c905.anoc,
-    #                                     c913.idLote,
-    #                                     nrolote = CASE
-    #                                         WHEN c913.idLote IS NULL THEN c905.nuitem
-    #                                         ELSE c934.NroLote
-    #                                     END,
-    #                                     descricao = CASE
-    #                                         WHEN c913.idLote IS NULL THEN 'Lote ' + RTRIM(c905.nuitem)
-    #                                         ELSE c934.Descricao
-    #                                     END,
-    #                                     estrut = CASE
-    #                                         WHEN c812.estrut_atu IS NULL THEN c905.estrut
-    #                                         ELSE c812.estrut_atu
-    #                                     END,
-    #                                     grupo = CASE
-    #                                         WHEN c812.grupo_atu IS NULL THEN c905.grupo
-    #                                         ELSE c812.grupo_atu
-    #                                     END,
-    #                                     subgrp = CASE
-    #                                         WHEN c812.subgrp_atu IS NULL THEN c905.subgrp
-    #                                         ELSE c812.subgrp_atu
-    #                                     END,
-    #                                     itemat = CASE
-    #                                         WHEN c812.itemat_atu IS NULL THEN c905.itemat
-    #                                         ELSE c812.itemat_atu
-    #                                     END,
-    #                                     digmat = CASE
-    #                                         WHEN c812.digmat_atu IS NULL THEN c905.digmat
-    #                                         ELSE c812.digmat_atu
-    #                                     END,
-    #                                     c905.codfor,
-    #                                     c905.venc,
-    #                                     c905.class,
-    #                                     preco = c905.pr_unit,
-    #                                     c905.marca,
-    #                                     c905.modelo,
-    #                                     c905.nuitem,
-    #                                     qtde = SUM(c913.quantid),
-    #                                     total = SUM(ROUND(c905.qtde * c905.pr_unit, 2)),
-    #                                     insmf = c072.nrcpfcnpj
-    #                                 FROM
-    #                                     mat.MCT90500 c905
-    #                                 INNER JOIN mat.MCT91200 c912 ON
-    #                                     c912.unges = c905.unges
-    #                                     AND c912.sigla = c905.sigla
-    #                                     AND c912.convit = c905.convit
-    #                                     AND c912.anoc = c905.anoc
-    #                                 INNER JOIN mat.MCT91300 c913 ON
-    #                                     c913.unges = c912.unges
-    #                                     AND c913.codgrupo = c912.codgrupo
-    #                                     AND c913.anogrupo = c912.anogrupo
-    #                                     AND c913.estrut = c905.estrut
-    #                                     AND c913.grupo = c905.grupo
-    #                                     AND c913.subgrp = c905.subgrp
-    #                                     AND c913.itemat = c905.itemat
-    #                                     AND c913.digmat = c905.digmat
-    #                                     AND ISNULL(c913.idLote,
-    #                                     0) = ISNULL(c905.idLote,
-    #                                     0)
-    #                                 LEFT JOIN mat.MCT81200 c812 ON
-    #                                     c812.unges = c905.unges
-    #                                     AND c812.sigla = c905.sigla
-    #                                     AND c812.anoc = c905.anoc
-    #                                     AND c812.convit = c905.convit
-    #                                     AND c812.codfor = c905.codfor
-    #                                     AND c812.estrut_ant = c905.estrut
-    #                                     AND c812.grupo_ant = c905.grupo
-    #                                     AND c812.subgrp_ant = c905.subgrp
-    #                                     AND c812.itemat_ant = c905.itemat
-    #                                     AND c812.digmat_ant = c905.digmat
-    #                                 LEFT JOIN mat.MCT93400 c934 ON
-    #                                     c934.IdLote = c913.idLote
-    #                                 LEFT JOIN mat.MCT07200 c072 ON
-    #                                     c072.idfornecedor = c905.idMCT072
-    #                                 where c905.anoc >= 2023
-    #                                 GROUP BY
-    #                                     c905.unges,
-    #                                     c905.sigla,
-    #                                     c905.convit,
-    #                                     c905.anoc,
-    #                                     c913.idLote,
-    #                                     c812.estrut_atu,
-    #                                     c812.grupo_atu,
-    #                                     c812.subgrp_atu,
-    #                                     c812.itemat_atu,
-    #                                     c812.digmat_atu,
-    #                                     c905.estrut,
-    #                                     c905.grupo,
-    #                                     c905.subgrp,
-    #                                     c905.itemat,
-    #                                     c905.digmat,
-    #                                     c905.pr_unit,
-    #                                     c913.idLote,
-    #                                     c905.codfor,
-    #                                     c905.venc,
-    #                                     c905.class,
-    #                                     c905.nuitem,
-    #                                     c905.marca,
-    #                                     c905.modelo,
-    #                                     c934.nrolote,
-    #                                     c934.descricao,
-    #                                     c072.nrcpfcnpj) as query""")
-
     ###### SELECT DA PROPOSTA COM ITENS DESAGRUPADOS
-    # consulta = fetchallmap("""select
-    #                                 1 sessao,
-    #                                 codfor codif,
-    #                                 ROW_NUMBER() over (partition by codfor, convit order by nuitem) teste,
-    #                                 nuitem item,
-    #                                 qtde quan1,
-    #                                 preco vaun1,
-    #                                 total vato1,
-    #                                 case when venc is null then 'D' else 'C' end as status,
-    #                                 --venc subem,
-    #                                 marca,
-    #                                 insmf,
-    #                                 right('00000000'+cast(nrolote as varchar),8) lotelic,
-    #                                 sigla sigla_ant,
-    #                                 convit numpro,
-    #                                 anoc ano,
-    #                                 'N' registropreco
-    #                             from
-    #                                 (
-    #                                 SELECT
-    #                                     c697.IdProcCompra,
-    #                                     c697.unges,
-    #                                     c697.sigla,
-    #                                     c697.convit,
-    #                                     c697.anoc,
-    #                                     c803.idlote,
-    #                                     nrolote = CASE
-    #                                         WHEN c803.idLote IS NULL THEN c698.nuitem
-    #                                         ELSE c934.NroLote
-    #                                     END,
-    #                                     descricao = CASE
-    #                                         WHEN c803.idLote IS NULL THEN 'Lote ' + RTRIM(c698.nuitem)
-    #                                         ELSE c934.Descricao
-    #                                     END,
-    #                                     estrut = CASE
-    #                                         WHEN c812.estrut_atu IS NULL THEN c698.estrut
-    #                                         ELSE c812.estrut_atu
-    #                                     END,
-    #                                     grupo = CASE
-    #                                         WHEN c812.grupo_atu IS NULL THEN c698.grupo
-    #                                         ELSE c812.grupo_atu
-    #                                     END,
-    #                                     subgrp = CASE
-    #                                         WHEN c812.subgrp_atu IS NULL THEN c698.subgrp
-    #                                         ELSE c812.subgrp_atu
-    #                                     END,
-    #                                     itemat = CASE
-    #                                         WHEN c812.itemat_atu IS NULL THEN c698.itemat
-    #                                         ELSE c812.itemat_atu
-    #                                     END,
-    #                                     digmat = CASE
-    #                                         WHEN c812.digmat_atu IS NULL THEN c698.digmat
-    #                                         ELSE c812.digmat_atu
-    #                                     END,
-    #                                     codfor = c698.codfor,
-    #                                     c698.codfor_representante,
-    #                                     c698.venc,
-    #                                     c698.empate,
-    #                                     c698.preco,
-    #                                     c698.marca,
-    #                                     c698.valid,
-    #                                     c698.prazo,
-    #                                     c698.pgto,
-    #                                     c698.nuitem,
-    #                                     c698.garantia,
-    #                                     qtde = SUM(C803.quantid),
-    #                                     total = SUM(ROUND(C803.quantid * c698.preco, 2)),
-    #                                     insmf = c072.nrcpfcnpj
-    #                                 FROM
-    #                                     mat.MCT69700 c697
-    #                                 INNER JOIN mat.MCT69800 c698 ON
-    #                                     c698.IdProcCompra = c697.IdProcCompra
-    #                                 INNER JOIN mat.MCT80200 c802 ON
-    #                                     C802.convit = c697.convit
-    #                                     AND C802.sigla = c697.sigla
-    #                                     AND C802.anoc = c697.anoc
-    #                                     AND C802.unges = c697.unges
-    #                                     AND c802.aditivo = 0
-    #                                 INNER JOIN mat.MCT80300 c803 ON
-    #                                     C803.codgrupo = C802.codgrupo
-    #                                     AND C803.anogrupo = C802.anogrupo
-    #                                     AND C803.unges = C802.unges
-    #                                     AND C803.estrut = c698.estrut
-    #                                     AND C803.grupo = c698.grupo
-    #                                     AND C803.subgrp = c698.subgrp
-    #                                     AND C803.itemat = c698.itemat
-    #                                     AND C803.digmat = c698.digmat
-    #                                     AND ISNULL(c803.idLote,
-    #                                     0) = ISNULL(c698.idLote,
-    #                                     0)
-    #                                 LEFT JOIN mat.MCT81200 c812 ON
-    #                                     c812.unges = c697.unges
-    #                                     AND c812.sigla = c697.sigla
-    #                                     AND c812.anoc = c697.anoc
-    #                                     AND c812.convit = c697.convit
-    #                                     AND c812.codfor = c698.codfor
-    #                                     AND c812.estrut_ant = c698.estrut
-    #                                     AND c812.grupo_ant = c698.grupo
-    #                                     AND c812.subgrp_ant = c698.subgrp
-    #                                     AND c812.itemat_ant = c698.itemat
-    #                                     AND c812.digmat_ant = c698.digmat
-    #                                 LEFT JOIN mat.MCT93400 c934 ON
-    #                                     c934.IdLote = c803.idLote
-    #                                 LEFT JOIN mat.MCT07200 c072 ON
-    #                                     c072.idfornecedor = c698.idMCT072
-    #                                 where c697.anoc >= 2019
-    #                                 GROUP BY
-    #                                     c697.IdProcCompra,
-    #                                     c697.unges,
-    #                                     c697.sigla,
-    #                                     c697.convit,
-    #                                     c697.anoc,
-    #                                     c812.estrut_atu,
-    #                                     c812.grupo_atu,
-    #                                     c812.subgrp_atu,
-    #                                     c812.itemat_atu,
-    #                                     c812.digmat_atu,
-    #                                     c698.estrut,
-    #                                     c698.grupo,
-    #                                     c698.subgrp,
-    #                                     c698.itemat,
-    #                                     c698.digmat,
-    #                                     c698.codfor,
-    #                                     c698.venc,
-    #                                     c698.empate,
-    #                                     c698.preco,
-    #                                     c698.marca,
-    #                                     c698.valid,
-    #                                     c698.prazo,
-    #                                     c698.pgto,
-    #                                     c698.nuitem,
-    #                                     c698.garantia,
-    #                                     c803.idlote,
-    #                                     c934.nrolote,
-    #                                     c934.descricao,
-    #                                     c698.codfor_representante,
-    #                                     c072.nrcpfcnpj) as query
-    #                             Union all
-    #                             select
-    #                                 1 sessao,
-    #                                 codfor codif,
-    #                                 ROW_NUMBER() over (partition by codfor, convit order by nuitem)itemp,
-    #                                 nuitem,
-    #                                 qtde quan1,
-    #                                 preco vaun1,
-    #                                 total vato1,
-    #                                 case when class is null then 'D' else 'C' end as status,
-    #                                 --class subem,
-    #                                 marca,
-    #                                 insmf,
-    #                                 right('00000000'+cast(nrolote as varchar),8) lotelic,
-    #                                 sigla sigla_ant,
-    #                                 convit numpro,
-    #                                 anoc ano,
-    #                                 'S' registropreco
-    #                             from
-    #                                 (
-    #                                 SELECT
-    #                                     c905.unges,
-    #                                     c905.sigla,
-    #                                     c905.convit,
-    #                                     c905.anoc,
-    #                                     c913.idLote,
-    #                                     nrolote = CASE
-    #                                         WHEN c913.idLote IS NULL THEN c905.nuitem
-    #                                         ELSE c934.NroLote
-    #                                     END,
-    #                                     descricao = CASE
-    #                                         WHEN c913.idLote IS NULL THEN 'Lote ' + RTRIM(c905.nuitem)
-    #                                         ELSE c934.Descricao
-    #                                     END,
-    #                                     estrut = CASE
-    #                                         WHEN c812.estrut_atu IS NULL THEN c905.estrut
-    #                                         ELSE c812.estrut_atu
-    #                                     END,
-    #                                     grupo = CASE
-    #                                         WHEN c812.grupo_atu IS NULL THEN c905.grupo
-    #                                         ELSE c812.grupo_atu
-    #                                     END,
-    #                                     subgrp = CASE
-    #                                         WHEN c812.subgrp_atu IS NULL THEN c905.subgrp
-    #                                         ELSE c812.subgrp_atu
-    #                                     END,
-    #                                     itemat = CASE
-    #                                         WHEN c812.itemat_atu IS NULL THEN c905.itemat
-    #                                         ELSE c812.itemat_atu
-    #                                     END,
-    #                                     digmat = CASE
-    #                                         WHEN c812.digmat_atu IS NULL THEN c905.digmat
-    #                                         ELSE c812.digmat_atu
-    #                                     END,
-    #                                     c905.codfor,
-    #                                     c905.venc,
-    #                                     c905.class,
-    #                                     preco = c905.pr_unit,
-    #                                     c905.marca,
-    #                                     c905.modelo,
-    #                                     c905.nuitem,
-    #                                     qtde = SUM(c913.quantid),
-    #                                     total = SUM(ROUND(c905.qtde * c905.pr_unit, 2)),
-    #                                     insmf = c072.nrcpfcnpj
-    #                                 FROM
-    #                                     mat.MCT90500 c905
-    #                                 INNER JOIN mat.MCT91200 c912 ON
-    #                                     c912.unges = c905.unges
-    #                                     AND c912.sigla = c905.sigla
-    #                                     AND c912.convit = c905.convit
-    #                                     AND c912.anoc = c905.anoc
-    #                                 INNER JOIN mat.MCT91300 c913 ON
-    #                                     c913.unges = c912.unges
-    #                                     AND c913.codgrupo = c912.codgrupo
-    #                                     AND c913.anogrupo = c912.anogrupo
-    #                                     AND c913.estrut = c905.estrut
-    #                                     AND c913.grupo = c905.grupo
-    #                                     AND c913.subgrp = c905.subgrp
-    #                                     AND c913.itemat = c905.itemat
-    #                                     AND c913.digmat = c905.digmat
-    #                                     AND ISNULL(c913.idLote,
-    #                                     0) = ISNULL(c905.idLote,
-    #                                     0)
-    #                                 LEFT JOIN mat.MCT81200 c812 ON
-    #                                     c812.unges = c905.unges
-    #                                     AND c812.sigla = c905.sigla
-    #                                     AND c812.anoc = c905.anoc
-    #                                     AND c812.convit = c905.convit
-    #                                     AND c812.codfor = c905.codfor
-    #                                     AND c812.estrut_ant = c905.estrut
-    #                                     AND c812.grupo_ant = c905.grupo
-    #                                     AND c812.subgrp_ant = c905.subgrp
-    #                                     AND c812.itemat_ant = c905.itemat
-    #                                     AND c812.digmat_ant = c905.digmat
-    #                                 LEFT JOIN mat.MCT93400 c934 ON
-    #                                     c934.IdLote = c913.idLote
-    #                                 LEFT JOIN mat.MCT07200 c072 ON
-    #                                     c072.idfornecedor = c905.idMCT072
-    #                                 where c905.anoc >= 2023
-    #                                 GROUP BY
-    #                                     c905.unges,
-    #                                     c905.sigla,
-    #                                     c905.convit,
-    #                                     c905.anoc,
-    #                                     c913.idLote,
-    #                                     c812.estrut_atu,
-    #                                     c812.grupo_atu,
-    #                                     c812.subgrp_atu,
-    #                                     c812.itemat_atu,
-    #                                     c812.digmat_atu,
-    #                                     c905.estrut,
-    #                                     c905.grupo,
-    #                                     c905.subgrp,
-    #                                     c905.itemat,
-    #                                     c905.digmat,
-    #                                     c905.pr_unit,
-    #                                     c913.idLote,
-    #                                     c905.codfor,
-    #                                     c905.venc,
-    #                                     c905.class,
-    #                                     c905.nuitem,
-    #                                     c905.marca,
-    #                                     c905.modelo,
-    #                                     c934.nrolote,
-    #                                     c934.descricao,
-    #                                     c072.nrcpfcnpj) as query""")
-
-    ##### SELECT PROPOSTA COM ITENS AGRUPADOS
-    consulta = fetchallmap("""select distinct * from (select
+    consulta = fetchallmap(f"""select DISTINCT * from (select
                                     1 sessao,
                                     codfor codif,
+                                    --ROW_NUMBER() over (partition by isnull(codfor,insmf), convit order by nuitem) item,
                                     nuitem itemp,
-                                    qtde quan1,
-                                    preco vaun1,
-                                    total vato1,
+                                    coalesce(qtde, 0) quan1,
+                                    coalesce(preco, 0) vaun1,
+                                    coalesce(total, 0) vato1,
                                     case when venc is null then 'D' else 'C' end as status,
-                                    --venc subem,
-                                    marca,
+                                    venc subem,
+                                    rtrim(marca) marca,
                                     insmf,
                                     right('00000000'+cast(nrolote as varchar),8) lotelic,
                                     sigla sigla_ant,
@@ -994,7 +480,7 @@ def cadpro_proposta():
                                     'N' registropreco
                                 from
                                     (
-                                    SELECT
+                                    SELECT 
                                         c697.IdProcCompra,
                                         c697.unges,
                                         c697.sigla,
@@ -1080,7 +566,7 @@ def cadpro_proposta():
                                         c934.IdLote = c803.idLote
                                     LEFT JOIN mat.MCT07200 c072 ON
                                         c072.idfornecedor = c698.idMCT072
-                                    where c697.anoc >= 2019
+                                    where c697.anoc >= {ANO-5}
                                     GROUP BY
                                         c697.IdProcCompra,
                                         c697.unges,
@@ -1116,13 +602,14 @@ def cadpro_proposta():
                                 select
                                     1 sessao,
                                     codfor codif,
-                                    nuitem itemp,
-                                    qtde quan1,
-                                    preco vaun1,
-                                    total vato1,
-                                    case when class is null then 'D' else 'C' end as status,
-                                    --class subem,
-                                    marca,
+                                    --ROW_NUMBER() over (partition by codfor, convit order by nuitem)itemp,
+                                    nuitem,
+                                    coalesce(qtde,0) quan1,
+                                    coalesce(preco,0) vaun1,
+                                    coalesce(total,0) vato1,
+                                    case when isnull(class,venc) is null then 'D' else 'C' end as status,
+                                    venc subem,
+                                    rtrim(marca) marca,
                                     insmf,
                                     right('00000000'+cast(nrolote as varchar),8) lotelic,
                                     sigla sigla_ant,
@@ -1209,7 +696,7 @@ def cadpro_proposta():
                                         c934.IdLote = c913.idLote
                                     LEFT JOIN mat.MCT07200 c072 ON
                                         c072.idfornecedor = c905.idMCT072
-                                    where c905.anoc >= 2023
+                                    where c905.anoc >= {ANO-5}
                                     GROUP BY
                                         c905.unges,
                                         c905.sigla,
@@ -1236,39 +723,45 @@ def cadpro_proposta():
                                         c905.modelo,
                                         c934.nrolote,
                                         c934.descricao,
-                                        c072.nrcpfcnpj) as query) as rn""")
-    
-    insert = cur_fdb.prep('insert into cadpro_proposta (codif, sessao, numlic, itemp, item, quan1, vaun1, vato1, status, marca) values (?,?,?,?,?,?,?,?,?,?)')
+                                        c072.nrcpfcnpj) as query) as rn
+                                        order by [subem] desc""")
+
+    insert = cur_fdb.prep('insert into cadpro_proposta (codif, sessao, numlic, itemp, item, quan1, vaun1, vato1, status, marca, subem) values (?,?,?,?,?,?,?,?,?,?,?)')
     i = 0
 
     for row in tqdm(consulta):
         i += 1
-        codif = row['codif'] if row['codif'] else INSMF_FORNECEDOR[row['insmf']]
+        try:
+            codif = row['codif'] if row['codif'] else INSMF_FORNECEDOR[row['insmf']]
+        except:
+            codif = cadastra_fornecedor_especifico(row['insmf'])
+            INSMF_FORNECEDOR[row['insmf']] = codif # Atualiza o dicionário
         sessao = row['sessao']
         numlic = LICITACAO[(row['numpro'], row['sigla_ant'], row['ano'], row['registropreco'])]
         itemp = row['itemp']
         item = row['itemp']
-        quan1 = row['quan1']
-        vaun1 = row['vaun1']
-        vato1 = row['vato1']
+        quan1 = int(row['quan1'])
+        vaun1 = float(row['vaun1'])
+        vato1 = float(row['vato1'])
         status = row['status']
         marca = row['marca']
+        subem = row['subem']
 
-        cur_fdb.execute(insert,(codif, sessao, numlic, itemp, item, quan1, vaun1, vato1, status, marca))
+        try:
+            cur_fdb.execute(insert,(codif, sessao, numlic, itemp, item, quan1, vaun1, vato1, status, marca, subem))
+        except:
+            continue
 
         if i % 10000 == 0:
             commit()
     commit()
 
 def cadpro_lance():
+    cur_fdb.execute('delete from cadpro_lance')
+    commit()
     print('Inserindo os lances...')
-
-    insert = cur_fdb.prep("""insert into cadpro_lance (sessao, rodada, codif, itemp, vaunl, vatol, desconto, status, subem, numlic) values (?,?,?,?,?,?,?,?,?,?)""")
-
-    consulta = ...
-
-    for row in tqdm(consulta):
-        ...
+    cur_fdb.execute("""insert into cadpro_lance (sessao, rodada, codif, itemp, vaunl, vatol, status, subem, numlic)
+                        SELECT sessao, 1 rodada, CODIF, ITEMP, VAUN1, VATO1, 'F' status, SUBEM, numlic FROM CADPRO_PROPOSTA cp where subem = 1""")
     commit()
 
 def cadpro_final():
@@ -1276,6 +769,8 @@ def cadpro_final():
     cria_campo("alter table cadpro_final add CQTDADT double precision")
     cria_campo("alter table cadpro_final add ccadpro varchar(20)")
     cria_campo("alter table cadpro_final add CCODCCUSTO integer;")
+    cur_fdb.execute('delete from cadpro_final')
+    commit()
 
     cur_fdb.execute("""EXECUTE BLOCK
                         AS
@@ -1284,30 +779,23 @@ def cadpro_final():
                                                 SELECT A.NUMLIC, A.SESSAO, A.CODIF, A.ITEMP, A.VAUNL, A.VATOL, 'C', 1, NULL 
                                                 FROM CADPRO_LANCE A  
                                                 WHERE NOT EXISTS(SELECT 1 FROM CADPRO_FINAL B WHERE A.NUMLIC = B.NUMLIC AND A.SESSAO = B.ULT_SESSAO AND A.CODIF = B.CODIF AND A.ITEMP = B.ITEMP)  
-                                                AND A.STATUS = 'F' AND A.NUMLIC IN (SELECT NUMLIC FROM CADLIC WHERE codlicitacao_ant IS NOT NULL);                            
+                                                AND A.STATUS = 'F' AND A.NUMLIC IN (SELECT NUMLIC FROM CADLIC);                            
                             INSERT INTO CADPRO_FINAL (NUMLIC, ULT_SESSAO, CODIF, ITEMP, VAUNF, VATOF, STATUS, SUBEM, PERCF) 
                                                 SELECT A.NUMLIC, A.SESSAO, A.CODIF, A.ITEMP, A.VAUN1, A.VATO1, 'C', 1, NULL  
                                                 FROM CADPRO_PROPOSTA A 
                                                 WHERE NOT EXISTS(SELECT 1 FROM CADPRO_FINAL B WHERE A.NUMLIC = B.NUMLIC AND A.SESSAO = B.ULT_SESSAO AND A.ITEMP = B.ITEMP) 
-                                                AND A.STATUS = 'C' AND A.SUBEM = 1 AND A.NUMLIC IN (SELECT NUMLIC FROM CADLIC WHERE codlicitacao_ant IS NOT NULL);
+                                                AND A.STATUS = 'C' AND A.SUBEM = 1 AND A.NUMLIC IN (SELECT NUMLIC FROM CADLIC);
                             UPDATE CADPRO_FINAL A SET A.CQTDADT = (SELECT B.QUAN1 FROM CADPROLIC B WHERE A.NUMLIC = B.NUMLIC AND A.ITEMP = B.ITEM) 
                                             WHERE A.NUMLIC IN (SELECT C.NUMLIC FROM CADLIC C);                              
                             UPDATE CADPRO_FINAL A SET A.CCADPRO = (SELECT B.CADPRO FROM CADPROLIC B WHERE A.NUMLIC = B.NUMLIC AND A.ITEMP = B.ITEM) 
                                             WHERE A.NUMLIC IN (SELECT C.NUMLIC FROM CADLIC C);                              
                             UPDATE CADPRO_FINAL A SET A.CCODCCUSTO = (SELECT B.CODCCUSTO FROM CADPROLIC B WHERE A.NUMLIC = B.NUMLIC AND A.ITEMP = B.ITEM) 
-                                            WHERE A.NUMLIC IN (SELECT C.NUMLIC FROM CADLIC C); 
-                            UPDATE cadorc b SET b.LIBERADO = 'S', b.LIBERADO_TELA = 'L', b.PROCLIC = (SELECT a.proclic FROM cadlic a WHERE a.CODANT_ANEXO = b.CODANT_ANEXO), 
-                                            b.NUMLIC = (SELECT a.numlic FROM cadlic a WHERE a.CODANT_ANEXO = b.CODANT_ANEXO);           
+                                            WHERE A.NUMLIC IN (SELECT C.NUMLIC FROM CADLIC C);        
                         END""")
     commit()
 
 def cadpro():
     print('Inserindo Cadpro...')
-
-    cur_fdb.execute(f"""insert into cadpro (codif, cadpro, quan1, vaun1, vato1, subem, status, item, itemorcped, codccusto, numlic, ult_sessao, itemp, qtdadt, vaunadt, vatoadt )
-                        select a.codif, ccadpro, cqtdadt, vaunf, vatof, subem,STATUS, itemp, itemp, ccodccusto, a.numlic, '1', itemp, cqtdadt, vaunf, vatof
-                        FROM CADPRO_FINAL A
-                        INNER JOIN CADLIC B ON A.NUMLIC = B.NUMLIC WHERE B.MODLIC NOT IN ('PP01', 'PE01');""")
     
     cur_fdb.execute(f"""INSERT INTO
                             CADPRO(CODIF,
@@ -1381,16 +869,15 @@ def cadpro():
                                                 INNER JOIN CADLIC D ON D.NUMLIC = A.NUMLIC
                         WHERE
                             a.SUBEM = 1
-                            AND a.STATUS = 'F'
-                            AND D.MODLIC IN ('PP01', 'PE01')""")
+                            AND a.STATUS = 'F'""")
     
     cur_fdb.execute(f"""insert into cadprolic_detalhe_fic (numlic, item, codigo, qtd, valor, qtdadt, valoradt, codccusto, qtdmed, valormed, tipo) 
                      select numlic, item, '0', quan1, vato1, qtdadt, vatoadt, codccusto, quan1, vato1, 'C' from cadpro where numlic in 
-                     (select numlic from cadlic where registropreco='N' and liberacompra='S' and subem=1;""")
+                     (select numlic from cadlic where registropreco='N' and liberacompra='S') and subem=1;""")
     
-    cur_fdb.execute(f"""insert into cadprolic_detalhe_fic (numlic, item, codigo, qtd, valor, qtdadt, valoradt, codccusto, qtdmed, valormed, tipo)
-                     select numlic, item, '0', quan1, vato1, quan1, vato1, codccusto, quan1, vato1, 'C' from regpreco where numlic in 
-                     (select numlic from cadlic where registropreco='S' and liberacompra='S' and subem=1;""")
+    # cur_fdb.execute(f"""insert into cadprolic_detalhe_fic (numlic, item, codigo, qtd, valor, qtdadt, valoradt, codccusto, qtdmed, valormed, tipo)
+    #                  select numlic, item, '0', quan1, vato1, quan1, vato1, codccusto, quan1, vato1, 'C' from regpreco where numlic in 
+    #                  (select numlic from cadlic where registropreco='S' and liberacompra='S') and subem=1;""")
     commit()
 
 def regpreco():
@@ -1413,6 +900,10 @@ def regpreco():
                         FROM CADLIC A INNER JOIN CADPRO B ON (A.NUMLIC = B.NUMLIC) WHERE A.REGISTROPRECO = 'S' AND A.DTHOM IS NOT NULL  
                         AND NOT EXISTS(SELECT 1 FROM REGPRECOHIS X  
                         WHERE X.NUMLIC = B.NUMLIC AND X.CODIF = B.CODIF AND X.CADPRO = B.CADPRO AND X.CODCCUSTO = B.CODCCUSTO AND X.ITEM = B.ITEM);  
+                    
+                        insert into cadprolic_detalhe_fic (numlic, item, codigo, qtd, valor, qtdadt, valoradt, codccusto, qtdmed, valormed, tipo)
+                        select numlic, item, '0', quan1, vato1, quan1, vato1, codccusto, quan1, vato1, 'C' from regpreco where numlic in 
+                        (select numlic from cadlic where registropreco='S' and liberacompra='S') and subem=1;
                         END;""")
     commit()
 
