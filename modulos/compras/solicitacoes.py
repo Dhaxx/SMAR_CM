@@ -2,7 +2,7 @@ from conexao import *
 from ..tools import *
 from tqdm import tqdm
 
-PRODUTOS = produtos()
+PRODUTOS = {}
 
 
 def cadastro():
