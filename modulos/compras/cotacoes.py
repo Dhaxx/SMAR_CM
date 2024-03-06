@@ -237,7 +237,6 @@ def cadastro():
         cur_fdb.execute(insert_icadorc, (numorc, item, cadpro, qtd, valor, itemorc, codccusto, itemorc_ag, id_cadorc))
     commit()
 
-
 def fornecedores():
     cur_fdb.execute('delete from fcadorc')
     print("Inserindo Fornecedores das Cotações ...")

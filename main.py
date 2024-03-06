@@ -13,11 +13,12 @@ def main():
     # base.centro_custo()
     # solicitacoes.cadastro()
     # cotacoes.cadastro()
-    cotacoes.fornecedores()
+    tools.ajustar_ccusto_cotacao()
+    # cotacoes.fornecedores()
     # cotacoes.valores()
     # tools.cadastra_fornecedor()
     # licitacao.cadlic()
-    licitacao.cadprolic()
+    # licitacao.cadprolic()
     # licitacao.prolic_prolics()
     # licitacao.cadpro_proposta() # Esperar a cotação
     # licitacao.cadpro_lance() # Esperar a cotação
