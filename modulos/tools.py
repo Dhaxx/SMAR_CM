@@ -52,7 +52,7 @@ def licitacoes():
     hash_map = {}
 
     for row in cur_fdb.fetchallmap():
-        hash_map[(row['numpro'], row['sigla_ant'], row['ano'], row['registropreco'])] = row['numlic']
+        hash_map[(row['numpro'], row['sigla_ant'], row['ano'])] = row['numlic'] # row['registropreco']
     return hash_map
 
 def fornecedores():

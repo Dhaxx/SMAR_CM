@@ -873,14 +873,6 @@ def cadpro():
                         WHERE
                             a.SUBEM = 1
                             AND a.STATUS = 'F'""")
-    
-    cur_fdb.execute(f"""insert into cadprolic_detalhe_fic (numlic, item, codigo, qtd, valor, qtdadt, valoradt, codccusto, qtdmed, valormed, tipo) 
-                     select numlic, item, '0', quan1, vato1, qtdadt, vatoadt, codccusto, quan1, vato1, 'C' from cadpro where numlic in 
-                     (select numlic from cadlic where registropreco='N' and liberacompra='S') and subem=1;""")
-    
-    # cur_fdb.execute(f"""insert into cadprolic_detalhe_fic (numlic, item, codigo, qtd, valor, qtdadt, valoradt, codccusto, qtdmed, valormed, tipo)
-    #                  select numlic, item, '0', quan1, vato1, quan1, vato1, codccusto, quan1, vato1, 'C' from regpreco where numlic in 
-    #                  (select numlic from cadlic where registropreco='S' and liberacompra='S') and subem=1;""")
     commit()
 
 def regpreco():
@@ -957,4 +949,50 @@ def vincula_cotacao_licitacao():
             cur_fdb.execute(update,(numlic,row['proclic'],numorc))
         except:
             continue
+    commit()
+
+def aditamento():
+    print('Inserindo Aditamentos...')
+
+    consulta = fetchallmap("""select
+                                    b.sigla,
+                                    b.convit,
+                                    b.anoc,
+                                    codfor codif,
+                                    a.estrut + '.' + a.grupo + '.' + a.subgrp + '.' + a.itemat + '-' + a.digmat cadpro,
+                                    sum(a.qtde) qtd,
+                                    sum(a.valor) vaun,
+                                    sum(a.vlrtotal) vatoadt
+                                from
+                                    mat.MCT66900 a
+                                join mat.MCT80200 b on
+                                    b.idAditivo = a.IdAditivo
+                                join mat.MCT73300 c on
+                                    c.IdAditivo = a.IdAditivo
+                                /*where
+                                    b.convit = 318
+                                    and b.anoc = 2020*/
+                                where b.anoc >= 2019
+                                GROUP by
+                                    b.sigla,
+                                    b.convit,
+                                    b.anoc,
+                                    codfor,
+                                    a.estrut + '.' + a.grupo + '.' + a.subgrp + '.' + a.itemat + '-' + a.digmat""")
+    
+    update_cadpro = cur_fdb.prep('UPDATE cadpro SET QTDADT = QTDADT + ?, VAUNADT = VAUNADT + ?, VATOADT = VATOADT + ? WHERE numlic = ? AND codif = ? AND cadpro = ?')
+
+    for row in tqdm(consulta):
+        qtd_aditada = row['qtd']
+        vaun_aditada = row['vaun']
+        vato_aditada = row['vatoadt']
+        numlic = LICITACAO[(row['convit'], row['sigla'], row['anoc'], 'N')]
+        codif = row['codif']
+        cadpro = PRODUTOS[row['cadpro']]
+        cur_fdb.execute(update_cadpro,(qtd_aditada, vaun_aditada, vato_aditada, numlic, codif, cadpro))
+    commit()
+
+    cur_fdb.execute(f"""insert into cadprolic_detalhe_fic (numlic, item, codigo, qtd, valor, qtdadt, valoradt, codccusto, qtdmed, valormed, tipo) 
+                    select numlic, item, '0', quan1, vato1, qtdadt, vatoadt, codccusto, quan1, vato1, 'C' from cadpro where numlic in 
+                    (select numlic from cadlic where registropreco='N' and liberacompra='S') and subem=1;""")
     commit()

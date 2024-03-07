@@ -20,12 +20,13 @@ def main():
     # licitacao.cadlic()
     # licitacao.cadprolic()
     # licitacao.prolic_prolics()
-    licitacao.cadpro_proposta() # Esperar a cotação
+    # licitacao.cadpro_proposta() # Esperar a cotação
     # licitacao.cadpro_lance() # Esperar a cotação
     # licitacao.cadpro_final() # Esperar a cotação
     # licitacao.cadpro_status() # Esperar a cotação
     # licitacao.cadpro() # Esperar a cotação
     # licitacao.regpreco() # Esperar a cotação
+    licitacao.aditamento()
 
 if __name__ == '__main__':
     main()
