@@ -180,3 +180,11 @@ def ajustar_ccusto_cotacao():
         cur_fdb.execute(update_cadorc, (cod_ant,row['codccusto']))
         cur_fdb.execute(update_icadorc, (cod_ant,row['codccusto']))
     commit()
+
+def depara_ccusto():
+    hash_map = {}
+    cur_fdb.execute('select cod_ant, codccusto from centrocusto')
+
+    for row in cur_fdb.fetchallmap():
+        hash_map[row['cod_ant']] = row['codccusto']
+    return hash_map

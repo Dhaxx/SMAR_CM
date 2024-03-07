@@ -2,6 +2,7 @@ from modulos.compras import base
 from modulos.compras import solicitacoes
 from modulos.compras import licitacao
 from modulos.compras import cotacoes
+from modulos.compras import pedidos
 from modulos import tools
 
 
@@ -20,13 +21,16 @@ def main():
     # licitacao.cadlic()
     # licitacao.cadprolic()
     # licitacao.prolic_prolics()
-    # licitacao.cadpro_proposta() # Esperar a cotação
-    # licitacao.cadpro_lance() # Esperar a cotação
-    # licitacao.cadpro_final() # Esperar a cotação
-    # licitacao.cadpro_status() # Esperar a cotação
-    # licitacao.cadpro() # Esperar a cotação
-    # licitacao.regpreco() # Esperar a cotação
-    licitacao.aditamento()
+    # licitacao.cadpro_proposta() 
+    # licitacao.cadpro_lance() 
+    # licitacao.cadpro_final() 
+    # licitacao.cadpro_status() 
+    # licitacao.cadpro() 
+    # licitacao.regpreco() 
+    # licitacao.aditamento()
+    # licitacao.cadpro_saldo_ant() # Ajustar as demais tabelas / Conferir os processos faltantes
+    pedidos.cabecalho()
+    pedidos.itens()
 
 if __name__ == '__main__':
     main()

@@ -996,3 +996,52 @@ def aditamento():
                     select numlic, item, '0', quan1, vato1, qtdadt, vatoadt, codccusto, quan1, vato1, 'C' from cadpro where numlic in 
                     (select numlic from cadlic where registropreco='N' and liberacompra='S') and subem=1;""")
     commit()
+
+def cadpro_saldo_ant():
+    print(f'Inserindo Pedidos Anteriores à {ANO}...')
+
+    insert = cur_fdb.prep("""insert into cadpro_saldo_ant (ano, numlic, item, cadpro, qtdped, vatoped) values (?,?,?,?,?,?)""")
+
+    consulta = fetchallmap(f"""select
+                                    a.sigla,
+                                    a.convit,
+                                    a.anoc,
+                                    a.codfor codif,
+                                    b.nuitem,
+                                    b.estrut + '.' + b.grupo + '.' + b.subgrp + '.' + b.itemat + '-' + b.digmat cadpro,
+                                    sum(b.qtde) qtde , 
+                                    sum(b.total) total,
+                                    isnull(c.UnidOrc,
+                                    0) codant
+                                from
+                                    mat.MCT67000 a
+                                join mat.MCT66800 b on
+                                    a.numint = b.numint
+                                    and a.anoint = b.anoint
+                                left join mat.UnidOrcamentariaW c on
+                                    a.idNivel5 = c.idNivel5
+                                where
+                                    a.anoc BETWEEN {ANO-5} and {ANO-1}
+                                GROUP by
+                                    sigla,
+                                    convit,
+                                    anoc,
+                                    a.codfor,
+                                    b.nuitem,
+                                    b.estrut + '.' + b.grupo + '.' + b.subgrp + '.' + b.itemat + '-' + b.digmat,
+                                    isnull(c.UnidOrc,
+                                    0)
+                                order by
+                                    a.anoc,
+                                    a.sigla,
+                                    a.convit""")
+    
+    for row in tqdm(consulta):
+        ano = row['anoc']
+        numlic = LICITACAO[(row['convit'], row['sigla'], ano)]
+        item = row['nuitem']
+        cadpro = row['cadpro']
+        qtdped = row['qtde']
+        vatoped = row['total']
+        cur_fdb.execute(insert,(ano, numlic, item, cadpro, qtdped, vatoped))
+    commit()
