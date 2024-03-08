@@ -3,6 +3,7 @@ from modulos.compras import solicitacoes
 from modulos.compras import licitacao
 from modulos.compras import cotacoes
 from modulos.compras import pedidos
+from modulos.compras import estoque
 from modulos import tools
 
 
@@ -31,6 +32,7 @@ def main():
     # licitacao.cadpro_saldo_ant() # Ajustar as demais tabelas / Conferir os processos faltantes
     # pedidos.cabecalho()
     # pedidos.itens()
-
+    
+    estoque.almoxarif_para_ccusto()
 if __name__ == '__main__':
     main()
