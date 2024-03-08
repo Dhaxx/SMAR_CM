@@ -188,3 +188,12 @@ def depara_ccusto():
     for row in cur_fdb.fetchallmap():
         hash_map[row['cod_ant']] = row['codccusto']
     return hash_map
+
+def item_da_proposta():
+    hash_map = {}
+
+    cur_fdb.execute('select numlic, ccadpro, codif, itemp from cadpro_final')
+
+    for row in cur_fdb.fetchallmap():
+        hash_map[(row['numlic'], row['ccadpro'], row['codif'])] = row['itemp']
+    return hash_map

@@ -6,6 +6,7 @@ PRODUTOS = produtos()
 LICITACAO = licitacoes()
 NOME_FORNECEDOR, INSMF_FORNECEDOR = fornecedores()
 COTACAO = cotacoes()
+ITEM_PROPOSTA = item_da_proposta()
 
 def cadlic():
     global LICITACAO
@@ -998,16 +999,18 @@ def aditamento():
     commit()
 
 def cadpro_saldo_ant():
+    cur_fdb.execute('delete from cadpro_saldo_ant')
+    cria_campo('alter table cadpro_saldo_ant add codif_ant varchar(10)')
     print(f'Inserindo Pedidos Anteriores à {ANO}...')
+    ignored = []
 
-    insert = cur_fdb.prep("""insert into cadpro_saldo_ant (ano, numlic, item, cadpro, qtdped, vatoped) values (?,?,?,?,?,?)""")
+    insert = cur_fdb.prep("""insert into cadpro_saldo_ant (ano, numlic, item, cadpro, qtdped, vatoped, codif_ant) values (?,?,?,?,?,?,?)""")
 
     consulta = fetchallmap(f"""select
                                     a.sigla,
                                     a.convit,
                                     a.anoc,
-                                    a.codfor codif,
-                                    b.nuitem,
+                                    cast(a.codfor as integer) codif,
                                     b.estrut + '.' + b.grupo + '.' + b.subgrp + '.' + b.itemat + '-' + b.digmat cadpro,
                                     sum(b.qtde) qtde , 
                                     sum(b.total) total,
@@ -1027,7 +1030,6 @@ def cadpro_saldo_ant():
                                     convit,
                                     anoc,
                                     a.codfor,
-                                    b.nuitem,
                                     b.estrut + '.' + b.grupo + '.' + b.subgrp + '.' + b.itemat + '-' + b.digmat,
                                     isnull(c.UnidOrc,
                                     0)
@@ -1039,9 +1041,18 @@ def cadpro_saldo_ant():
     for row in tqdm(consulta):
         ano = row['anoc']
         numlic = LICITACAO[(row['convit'], row['sigla'], ano)]
-        item = row['nuitem']
-        cadpro = row['cadpro']
+        cadpro = PRODUTOS[row['cadpro']]
+        try:
+            item = ITEM_PROPOSTA[numlic, cadpro, row['codif']]
+        except:
+            ignored.append(f'{row['sigla']}-{row['convit']}/{ano}')
+            continue
         qtdped = row['qtde']
         vatoped = row['total']
-        cur_fdb.execute(insert,(ano, numlic, item, cadpro, qtdped, vatoped))
+        codif_ant = row['codif']
+        try:
+            cur_fdb.execute(insert,(ano, numlic, item, cadpro, qtdped, vatoped, codif_ant))
+        except:
+            continue
     commit()
+    print(ignored)

@@ -29,8 +29,8 @@ def main():
     # licitacao.regpreco() 
     # licitacao.aditamento()
     # licitacao.cadpro_saldo_ant() # Ajustar as demais tabelas / Conferir os processos faltantes
-    pedidos.cabecalho()
-    pedidos.itens()
+    # pedidos.cabecalho()
+    # pedidos.itens()
 
 if __name__ == '__main__':
     main()
