@@ -33,6 +33,8 @@ def main():
     # pedidos.cabecalho()
     # pedidos.itens()
     
-    estoque.almoxarif_para_ccusto()
+    # estoque.almoxarif_para_ccusto()
+    # estoque.requi_saldo_ant()
+    estoque.requi()
 if __name__ == '__main__':
     main()
