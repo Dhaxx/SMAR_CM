@@ -218,7 +218,6 @@ def almoxarifado():
         cur_fdb.execute(insert, (row['destino'], row['descricao'], EMPRESA, row['almoxarifado']))
     commit()
 
-
 def centro_custo():
     cur_fdb.execute("DELETE FROM CENTROCUSTO")
     cria_campo('ALTER TABLE CENTROCUSTO ADD cod_ant varchar(19)')
@@ -245,7 +244,7 @@ def centro_custo():
                                 substring(nivel1,2,4) poder,
                                 substring(nivel2,2,4)  orgao,
                                 substring(nivel3,2,4) unidade,
-                                'Conversão' descr,
+                                'CONVERSÃO' descr,
                                 '' placa,
                                 'N' ocultar,
                                 0 codccusto,

@@ -54,7 +54,7 @@ def cadastro():
         else 'Agrupamento: ' +  cast(cabecalho.codgrupo  as varchar) + '/' + cast(cabecalho.anogrupo as varchar) end obs,
         'AP' status,
         'S' liberado,
-        coalesce(cabreq.Idnivel5,0) codccusto,
+        isnull(nivel1+'.'+nivel2+'.'+nivel3+'.'+nivel4+'.'+nivel5,0) codccusto,
         'L' liberado_tela,
         case cabecalho.origem when 'R' then 'S' else 'N' end registropreco,
                 [item] = ROW_NUMBER() over(PARTITION by cabecalho.idcotacao order by cabecalho.idcotacao , itemgr.nuitem),
@@ -81,7 +81,8 @@ def cadastro():
         and itemgr.subgrp  = item.subgrp
         and itemgr.itemat = item.itemat
         and itemgr.digmat = item.digmat
-        left join mat.MCT63400 cabreq on cabreq.unges  = itemgr.unges  and cabreq.anoreq  = itemgr.anoreq and cabreq.numreq  = itemgr.numreq                                  
+        left join mat.MCT63400 cabreq on cabreq.unges  = itemgr.unges  and cabreq.anoreq  = itemgr.anoreq and cabreq.numreq  = itemgr.numreq 
+		left join mat.MXT71100 centro on cabreq.Idnivel5 = centro.Idnivel5                                
         where year(data_cotacao) >= %d and cabecalho.origem = 'C' and cabecalho.codgrupo is not null
         union all
         select 
@@ -95,7 +96,7 @@ def cadastro():
         else 'Agrupamento: ' +  cast(cabecalho.codgrupo  as varchar) + '/' + cast(cabecalho.anogrupo as varchar) end obs,
         'AP' status,
         'S' liberado,
-        coalesce(cabreq.Idnivel5,0) codccusto,
+        isnull(nivel1+'.'+nivel2+'.'+nivel3+'.'+nivel4+'.'+nivel5,0) codccusto,
         'L' liberado_tela,
         case cabecalho.origem when 'R' then 'S' else 'N' end registropreco,
                 [item] = ROW_NUMBER() over(PARTITION by cabecalho.idcotacao order by cabecalho.idcotacao , item.nuitem),
@@ -113,7 +114,8 @@ def cadastro():
                                             AND produto.subgrp = item.subgrp
                                             AND produto.itemat = item.itemat
                                             AND produto.digmat = item.digmat
-        left join mat.MCT63400 cabreq on cabreq.unges  = cabecalho.unges  and cabreq.anoreq  = cabecalho.anoreq and cabreq.numreq  = cabecalho.numreq                                  
+        left join mat.MCT63400 cabreq on cabreq.unges  = cabecalho.unges  and cabreq.anoreq  = cabecalho.anoreq and cabreq.numreq  = cabecalho.numreq 
+        left join mat.MXT71100 centro on cabreq.Idnivel5 = centro.Idnivel5 
         where year(data_cotacao) >= %d and cabecalho.origem = 'C' and cabecalho.numreq is not null
         union all 
         select 
@@ -127,7 +129,7 @@ def cadastro():
         else 'Agrupamento: ' +  cast(cabecalho.codgrupo  as varchar) + '/' + cast(cabecalho.anogrupo as varchar) end obs,
         'AP' status,
         'S' liberado,
-        coalesce(cabreq.Idnivel5,0) codccusto,
+        isnull(nivel1+'.'+nivel2+'.'+nivel3+'.'+nivel4+'.'+nivel5,0) codccusto,
         'L' liberado_tela,
         case cabecalho.origem when 'R' then 'S' else 'N' end registropreco,
                 [item] = ROW_NUMBER() over(PARTITION by cabecalho.idcotacao order by cabecalho.idcotacao , itemgr.nuitem),
@@ -154,7 +156,8 @@ def cadastro():
         and itemgr.subgrp  = item.subgrp
         and itemgr.itemat = item.itemat
         and itemgr.digmat = item.digmat
-        left join mat.MCT90000 cabreq on cabreq.unges  = itemgr.unges  and cabreq.anoreg  = itemgr.anoreq and cabreq.numreg  = itemgr.numreq                                  
+        left join mat.MCT90000 cabreq on cabreq.unges  = itemgr.unges  and cabreq.anoreg  = itemgr.anoreq and cabreq.numreg  = itemgr.numreq  
+        left join mat.MXT71100 centro on cabreq.Idnivel5 = centro.Idnivel5 
         where year(data_cotacao) >= %d and cabecalho.origem = 'R' and cabecalho.codgrupo is not null
         union ALL 
         select 
@@ -168,7 +171,7 @@ def cadastro():
         else 'Agrupamento: ' +  cast(cabecalho.codgrupo  as varchar) + '/' + cast(cabecalho.anogrupo as varchar) end obs,
         'AP' status,
         'S' liberado,
-        coalesce(cabreq.Idnivel5,0) codccusto,
+        isnull(nivel1+'.'+nivel2+'.'+nivel3+'.'+nivel4+'.'+nivel5,0) codccusto,
         'L' liberado_tela,
         case cabecalho.origem when 'R' then 'S' else 'N' end registropreco,
                 [item] = ROW_NUMBER() over(PARTITION by cabecalho.idcotacao order by cabecalho.idcotacao , item.nuitem),
@@ -186,7 +189,8 @@ def cadastro():
                                             AND produto.subgrp = item.subgrp
                                             AND produto.itemat = item.itemat
                                             AND produto.digmat = item.digmat
-        left join mat.MCT90000 cabreq on cabreq.unges  = cabecalho.unges  and cabreq.anoreg  = cabecalho.anoreq and cabreq.numreg  = cabecalho.numreq                                  
+        left join mat.MCT90000 cabreq on cabreq.unges  = cabecalho.unges  and cabreq.anoreg  = cabecalho.anoreq and cabreq.numreg  = cabecalho.numreq   
+        left join mat.MXT71100 centro on cabreq.Idnivel5 = centro.Idnivel5 
         where year(data_cotacao) >= %d and cabecalho.origem = 'R' and cabecalho.numreq is not null
         ORDER by cabecalho.idcotacao , itemgr.nuitem
     """ % (ANO - 5, ANO - 5, ANO - 5, ANO - 5))

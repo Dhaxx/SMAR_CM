@@ -197,3 +197,21 @@ def item_da_proposta():
     for row in cur_fdb.fetchallmap():
         hash_map[(row['numlic'], row['ccadpro'], row['codif'])] = row['itemp']
     return hash_map
+
+def veiculo_tipo():
+    hash_map = {}
+
+    cur_fdb.execute('select codigo_tip, descricao_tip from veiculo_tipo')
+
+    for row in cur_fdb.fetchallmap():
+        hash_map[row['descricao_tip']] = row['codigo_tip']
+    return hash_map
+
+def veiculo_marca():
+    hash_map = {}
+
+    cur_fdb.execute('SELECT CODIGO_MAR, DESCRICAO_MAR FROM VEICULO_MARCA vm')
+
+    for row in cur_fdb.fetchallmap():
+        hash_map[row['descricao_mar']] = row['codigo_mar']
+    return hash_map

@@ -4,7 +4,10 @@ from modulos.compras import licitacao
 from modulos.compras import cotacoes
 from modulos.compras import pedidos
 from modulos.compras import estoque
+from modulos.frotas import motorista
+from modulos.frotas import veiculos
 from modulos import tools
+import conexao
 
 
 def main():
@@ -35,6 +38,14 @@ def main():
     
     # estoque.almoxarif_para_ccusto()
     # estoque.requi_saldo_ant()
-    estoque.requi()
+    # estoque.requi()
+
+    conexao.cur_sql.execute('USE SMARfrotas')
+    motorista.cadastro()
+    veiculos.modelo()
+    veiculos.marca()
+    veiculos.cadastro()   
+    conexao.cur_sql.execute('USE smar_compras')
+
 if __name__ == '__main__':
     main()

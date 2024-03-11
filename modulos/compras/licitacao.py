@@ -144,7 +144,7 @@ def cadlic():
                                         status status_ant
                                     FROM
                                         MAT.MCT67600
-                                    WHERE anoc BETWEEN {ANO-2} and {ANO} --anoc >= {ANO}
+                                    WHERE anoc >= {ANO-5}
                                 union ALL 
                                 SELECT
                                         convit numpro,
@@ -213,7 +213,7 @@ def cadlic():
                                         CriterioAceitabilidade criterio_ant,
                                         sigla sigla_ant,
                                         status status_ant
-                                    FROM mat.MCT91400 where anoc between {ANO-2} and {ANO} --anoc >= {ANO}
+                                    FROM mat.MCT91400 where anoc >= {ANO-5}
                                 ) AS subconsulta
                                 ORDER BY proclic, ANO;""")
     
@@ -406,7 +406,7 @@ def prolic_prolics():
                                         codfor is not null
                                         and codfor <> '') as query
                                 where
-                                    ano >= {ANO-2}""")
+                                    ano >= {ANO-2} and status = 'A'""")
     
     
 
@@ -741,7 +741,7 @@ def cadpro_proposta():
             codif = cadastra_fornecedor_especifico(row['insmf'])
             INSMF_FORNECEDOR[row['insmf']] = codif # Atualiza o dicionário
         sessao = row['sessao']
-        numlic = LICITACAO[(row['numpro'], row['sigla_ant'], row['ano'], row['registropreco'])]
+        numlic = LICITACAO[(row['numpro'], row['sigla_ant'], row['ano'])] #, row['registropreco']
         itemp = row['itemp']
         item = row['itemp']
         quan1 = int(row['quan1'])
@@ -944,7 +944,7 @@ def vincula_cotacao_licitacao():
     update = cur_fdb.prep('Update cadorc set numlic = ?, proclic = ? where numorc = ?')
     
     for row in tqdm(consulta):
-        numlic = LICITACAO[(row['convit'], row['sigla'], row['anoc'], row['registropreco'])]
+        numlic = LICITACAO[(row['convit'], row['sigla'], row['anoc'])] #, row['registropreco']
         try:
             numorc = COTACAO[(row['codgrupo'], row['anoc'], row['registropreco'])]
             cur_fdb.execute(update,(numlic,row['proclic'],numorc))
@@ -987,7 +987,7 @@ def aditamento():
         qtd_aditada = row['qtd']
         vaun_aditada = row['vaun']
         vato_aditada = row['vatoadt']
-        numlic = LICITACAO[(row['convit'], row['sigla'], row['anoc'], 'N')]
+        numlic = LICITACAO[(row['convit'], row['sigla'], row['anoc'])] #, 'N'
         codif = row['codif']
         cadpro = PRODUTOS[row['cadpro']]
         cur_fdb.execute(update_cadpro,(qtd_aditada, vaun_aditada, vato_aditada, numlic, codif, cadpro))
@@ -1039,13 +1039,13 @@ def cadpro_saldo_ant():
                                     a.convit""")
     
     for row in tqdm(consulta):
-        ano = row['anoc']
-        numlic = LICITACAO[(row['convit'], row['sigla'], ano)]
+        ano = ANO-1
+        numlic = LICITACAO[(row['convit'], row['sigla'], row['ano'])]
         cadpro = PRODUTOS[row['cadpro']]
         try:
             item = ITEM_PROPOSTA[numlic, cadpro, row['codif']]
         except:
-            ignored.append(f'{row['sigla']}-{row['convit']}/{ano}')
+            ignored.append(f'{row['sigla']}-{row['convit']}/{row['ano']}')
             continue
         qtdped = row['qtde']
         vatoped = row['total']
