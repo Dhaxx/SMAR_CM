@@ -7,7 +7,7 @@ from tqdm import tqdm
 from collections import namedtuple
 
 PRODUTOS = {}
-
+CENTROCUSTOS = {}
 
 def cadastro():
     cur_fdb.execute('Delete from icadorc')
@@ -17,9 +17,12 @@ def cadastro():
     cria_campo('ALTER TABLE CADORC ADD idant integer')
 
     global PRODUTOS
+    global CENTROCUSTOS
 
     if len(PRODUTOS) == 0:
         PRODUTOS = produtos()
+    if len(CENTROCUSTOS) == 0:
+        CENTROCUSTOS = depara_ccusto()
     insert_cadorc = cur_fdb.prep("""insert
                                 into
                                 cadorc (id_cadorc,
@@ -223,7 +226,7 @@ def cadastro():
             obs = row['obs']
             status = row['status']
             liberado = row['liberado']
-            codccusto = row['codccusto']
+            codccusto = CENTROCUSTOS[row['codccusto']]
             liberado_tela = row['liberado_tela']
             registropreco = row['registropreco']
             idant = row['numero']
@@ -233,7 +236,7 @@ def cadastro():
                 EMPRESA, registropreco, idant))
 
         item = row['item']
-        codccusto = row['Requisitante']
+        codccusto = CENTROCUSTOS[row['codccusto']]
         cadpro = PRODUTOS[row['cadpro']]
         qtd = float(row['Quantidade'])
         valor = float(row['Valor Unitário'])
@@ -241,7 +244,6 @@ def cadastro():
         itemorc_ag = row['itemorc_ag']
 
         cur_fdb.execute(insert_icadorc, (numorc, item, cadpro, qtd, valor, itemorc, codccusto, itemorc_ag, id_cadorc))
-
     commit()
 
 
@@ -291,7 +293,6 @@ def fornecedores():
         id_cadorc = filtro[row.idcotacao][1]  # filtro['id_cadorc']
 
         cur_fdb.execute(insert, (numorc, codif, nome, valorc, id_cadorc))
-
     commit()
 
 
@@ -544,7 +545,6 @@ def valores():
 
     cur_fdb.execute("update icadorc_cot set tipo = 'M' , flg_aceito = 'S'")
     cur_fdb.execute("update icadorc_cot set valunt = 0 where valunt is null")
-    cur_fdb.execute(
-        "update icadorc_cot t set t.valtot = qtd * valunt where valtot is null")
+    cur_fdb.execute("update icadorc_cot t set t.valtot = qtd * valunt where valtot is null")
 
     conexao_fdb.commit()
