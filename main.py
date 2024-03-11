@@ -17,7 +17,6 @@ def main():
     base.centro_custo()
     solicitacoes.cadastro()
     cotacoes.cadastro()
-    tools.ajustar_ccusto_cotacao()
     cotacoes.fornecedores()
     cotacoes.valores()
     tools.cadastra_fornecedor_geralizado()
