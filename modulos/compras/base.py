@@ -2,7 +2,6 @@ from conexao import *
 from ..tools import *
 from tqdm import tqdm
 
-
 def cadunimedida():
     cur_fdb.execute("DELETE FROM CADEST")  # Limpa tabela
     cur_fdb.execute("DELETE FROM CADUNIMEDIDA")  # Limpa tabela
@@ -195,10 +194,7 @@ def cadest():
 
         cadpro = f'{grupo}.{subgrp}.{codigo}'
 
-        cur_fdb.execute(insert, (
-            cadpro, grupo, subgrp, codigo, disc1[:1024], tipopro, unid1, discr1, codreduz, ocultar, estrut_ant,
-            grupo_ant,
-            subgrupo_ant, cod_ant, tipopro_ant))
+        cur_fdb.execute(insert, ( cadpro, grupo, subgrp, codigo, disc1[:1024], tipopro, unid1, discr1, codreduz, ocultar, estrut_ant, grupo_ant, subgrupo_ant, cod_ant, tipopro_ant))
         commit() if i % 1000 == 0 else None
     commit()
 

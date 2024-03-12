@@ -226,7 +226,7 @@ def cadastro():
             obs = row['obs']
             status = row['status']
             liberado = row['liberado']
-            codccusto = CENTROCUSTOS[row['codccusto']]
+            codccusto = CENTROCUSTOS.get(row['codccusto'], 0)
             liberado_tela = row['liberado_tela']
             registropreco = row['registropreco']
             idant = row['numero']
@@ -236,7 +236,7 @@ def cadastro():
                 EMPRESA, registropreco, idant))
 
         item = row['item']
-        codccusto = CENTROCUSTOS[row['codccusto']]
+        codccusto = CENTROCUSTOS.get(row['codccusto'], 0)
         cadpro = PRODUTOS[row['cadpro']]
         qtd = float(row['Quantidade'])
         valor = float(row['Valor Unitário'])

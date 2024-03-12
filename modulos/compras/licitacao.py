@@ -2,14 +2,7 @@ from conexao import *
 from ..tools import *
 from tqdm import tqdm
 
-PRODUTOS = produtos()
-LICITACAO = licitacoes()
-NOME_FORNECEDOR, INSMF_FORNECEDOR = fornecedores()
-COTACAO = cotacoes()
-ITEM_PROPOSTA = item_da_proposta()
-
 def cadlic():
-    global LICITACAO
     cur_fdb.execute('delete from cadlic')
     cria_campo('ALTER TABLE CADLIC ADD criterio_ant varchar(30)')
     cria_campo('ALTER TABLE CADLIC ADD sigla_ant varchar(2)')
@@ -261,8 +254,10 @@ def cadlic():
     cur_fdb.execute('''INSERT INTO CADLIC_SESSAO (NUMLIC, SESSAO, DTREAL, HORREAL, COMP, DTENC, HORENC, SESSAOPARA, MOTIVO) 
                   SELECT L.NUMLIC, CAST(1 AS INTEGER), L.DTREAL, L.HORREAL, L.COMP, L.DTENC, L.HORENC, CAST('T' AS VARCHAR(1)), CAST('O' AS VARCHAR(1)) FROM CADLIC L 
                   WHERE numlic not in (SELECT FIRST 1 S.NUMLIC FROM CADLIC_SESSAO S WHERE S.NUMLIC = L.NUMLIC)''')
+    cur_fdb.execute('''UPDATE cadlic SET MASCMOD = SIGLA_ANT||'-'||NUMPRO||'/'||ANO''')
     commit()
-    LICITACAO = licitacoes() # Popula a constante com as chaves (numpro, sigla_ant, ano) => numlic
+
+COTACAO = cotacoes()
 
 def cadprolic():
     cur_fdb.execute('DELETE FROM CADPROLIC')
@@ -308,11 +303,13 @@ def cadprolic():
                             item_ag,
                             id_cadorc) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""")
     
-    insert_det = cur_fdb.prep("""INSERT INTO CADPROLIC_DETALHE (NUMLIC,item,CADPRO,quan1,VAMED1,VATOMED1,marca,CODCCUSTO,ITEM_CADPROLIC) values (?,?,?,?,?,?,?,?,?)""")
+    # insert_det = cur_fdb.prep("""INSERT INTO CADPROLIC_DETALHE (NUMLIC,item,CADPRO,quan1,VAMED1,VATOMED1,marca,CODCCUSTO,ITEM_CADPROLIC) values (?,?,?,?,?,?,?,?,?)""")
+
+    i = 0
     
     for row in tqdm(consulta.fetchallmap()):
-        item = row['itemorc_ag']
-        item_mask = row['itemorc_ag']
+        item = row['item']
+        item_mask = row['item']
         numorc = row['numorc']
         cadpro = row['cadpro']
         quan1 = row['qtd']
@@ -328,9 +325,13 @@ def cadprolic():
         marca = None
 
         cur_fdb.execute(insert,(item, item_mask, numorc, cadpro, quan1, vamed1, vatomed1, codccusto, reduz, numlic, microempresa, tlance, item_ag, id_cadorc))
-        cur_fdb.execute(insert_det,(numlic, item_ag, cadpro, quan1, vamed1, vatomed1, marca, codccusto, item))
-    commit()
+        # cur_fdb.execute(insert_det,(numlic, item, cadpro, quan1, vamed1, vatomed1, marca, codccusto, item))
+        commit()
+    cur_fdb.execute('''INSERT INTO CADPROLIC_DETALHE (NUMLIC,item,CADPRO,quan1,VAMED1,VATOMED1,marca,CODCCUSTO,ITEM_CADPROLIC) 
+                       select numlic, item, cadpro, quan1, vamed1, vatomed1, marca, codccusto, item from cadprolic''')
 
+LICITACAO = licitacoes()
+NOME_FORNECEDOR, INSMF_FORNECEDOR = fornecedores()
 def prolic_prolics():
     cur_fdb.execute('DELETE FROM PROLICS')
     cur_fdb.execute('DELETE FROM PROLIC')
@@ -338,7 +339,8 @@ def prolic_prolics():
     print("Inserindo Proponentes...")
 
     i = 0
-    ignoradas = []
+
+    global INSMF_FORNECEDOR
 
     consulta = fetchallmap(f"""select
                                     distinct *
@@ -406,17 +408,21 @@ def prolic_prolics():
                                         codfor is not null
                                         and codfor <> '') as query
                                 where
-                                    ano >= {ANO-2} and status = 'A'""")
-    
-    
+                                    ano >= {ANO-5} and status = 'A'""")
 
     insert_prolic = cur_fdb.prep('insert into prolic (codif, nome, status, numlic) values (?,?,?,?)')
     insert_prolics = cur_fdb.prep('insert into prolics (sessao, codif, status, representante, numlic, usa_preferencia, codif_ant) values (?,?,?,?,?,?,?)')
 
     for row in tqdm(consulta):
         i += 1
-        codif = row['codif'] if row['codif'] is not None else INSMF_FORNECEDOR[row['insmf']]
-        nome = NOME_FORNECEDOR[codif]
+        try:
+            codif = row['codif'] if row['codif'] is not None else INSMF_FORNECEDOR[row['insmf']]
+            nome = NOME_FORNECEDOR[codif]
+        except:
+            filtro = cadastra_fornecedor_especifico(row['insmf'])
+            codif = filtro[0]
+            nome = filtro[1]
+            INSMF_FORNECEDOR[row['insmf']] = codif
         status = row['status']
         usa_preferencia = row['usa_preferencia']
         codif_ant = row['codif']
@@ -425,10 +431,10 @@ def prolic_prolics():
             numlic = LICITACAO[(row['numpro'], row['sigla_ant'], row['ano'])]
             cur_fdb.execute(insert_prolic,(codif, nome, status, numlic))
             cur_fdb.execute(insert_prolics,(1,codif, status, nome, numlic, usa_preferencia,nome,codif_ant))
+            if i % 1000 == 0:
+                commit()
         except Exception as e:
-            ignoradas.append((row['numpro'], row['sigla_ant'], row['ano']))
-        if i % 1000 == 0:
-            commit()
+            continue
     commit()
 
 def cadpro_status():
@@ -570,7 +576,7 @@ def cadpro_proposta():
                                         c934.IdLote = c803.idLote
                                     LEFT JOIN mat.MCT07200 c072 ON
                                         c072.idfornecedor = c698.idMCT072
-                                    where c697.anoc >= {ANO-2}
+                                    where c697.anoc >= {ANO-5}
                                     GROUP BY
                                         c697.IdProcCompra,
                                         c697.unges,
@@ -700,7 +706,7 @@ def cadpro_proposta():
                                         c934.IdLote = c913.idLote
                                     LEFT JOIN mat.MCT07200 c072 ON
                                         c072.idfornecedor = c905.idMCT072
-                                    where c905.anoc >= {ANO-2}
+                                    where c905.anoc >= {ANO-5}
                                     GROUP BY
                                         c905.unges,
                                         c905.sigla,
@@ -756,7 +762,7 @@ def cadpro_proposta():
         except:
             continue
 
-        if i % 10000 == 0:
+        if i % 1000 == 0:
             commit()
     commit()
 
@@ -952,6 +958,7 @@ def vincula_cotacao_licitacao():
             continue
     commit()
 
+PRODUTOS = produtos()
 def aditamento():
     print('Inserindo Aditamentos...')
 
@@ -998,6 +1005,7 @@ def aditamento():
                     (select numlic from cadlic where registropreco='N' and liberacompra='S') and subem=1;""")
     commit()
 
+ITEM_PROPOSTA = item_da_proposta()
 def cadpro_saldo_ant():
     cur_fdb.execute('delete from cadpro_saldo_ant')
     cria_campo('alter table cadpro_saldo_ant add codif_ant varchar(10)')
