@@ -12,7 +12,6 @@ CENTROCUSTOS = {}
 def cadastro():
     cur_fdb.execute('Delete from icadorc')
     cur_fdb.execute('Delete from cadorc')
-    print("Inserindo Cadastro de Cotações...")
 
     cria_campo('ALTER TABLE CADORC ADD idant integer')
 
@@ -204,7 +203,7 @@ def cadastro():
     numero = 0
     numorc = ""
 
-    for row in tqdm(consulta):
+    for row in tqdm(consulta, desc='Inserindo Cadastro de Cotações...'):
 
         chave_cursor = row['numero']
 
@@ -249,7 +248,6 @@ def cadastro():
 
 def fornecedores():
     cur_fdb.execute('delete from fcadorc')
-    print("Inserindo Fornecedores das Cotações ...")
     filtro = {}
 
     registros = cur_sql.execute("""
@@ -284,7 +282,7 @@ def fornecedores():
     for row in dados:
         filtro[row['idant']] = (row['numorc'], row['ID_CADORC'])
 
-    for row in tqdm(registros):
+    for row in tqdm(registros, desc='Inserindo Fornecedores das Cotações ...'):
         # filtro = next(x for x in dados if x['idant'] == row.idcotacao)
         numorc = filtro[row.idcotacao][0]  # filtro['numorc']
         codif = row.codif
@@ -297,8 +295,6 @@ def fornecedores():
 
 
 def valores():
-    print("Inserindo Valores das Cotações ...")
-
     registros = cur_sql.execute(
         """
         select 
@@ -504,7 +500,7 @@ def valores():
     menor_preco_fornecedor = 0
     id_cadorc = 0
     numorc = ""
-    for row in tqdm(registros):
+    for row in tqdm(registros, desc='Inserindo Valores das Cotações ...'):
 
         if row.repete > 1:
             continue

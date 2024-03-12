@@ -34,7 +34,6 @@ def grupo_e_subgrupo():
     cria_campo("ALTER TABLE CADSUBGR ADD subgrupo_ant varchar(2)")
     cria_campo("DELETE FROM CADSUBGR")
     cria_campo("DELETE FROM CADGRUPO")
-    print("Inserindo Grupos e Subgrupos...")
 
     consulta = fetchallmap("""select
                             estrut + right('0' + grupo,
@@ -53,7 +52,7 @@ def grupo_e_subgrupo():
     insert_subgrupo = cur_fdb.prep(
         "INSERT INTO CADSUBGR(grupo, subgrupo, nome, ocultar, grupo_ant, subgrupo_ant, estrutura_ant) VALUES(?,?,?,?,?,?,?)")
 
-    for row in tqdm(consulta):
+    for row in tqdm(consulta, desc='Inserindo Grupos e Subgrupos...'):
         if row['subgrupo'] == '000':
             cur_fdb.execute(insert_grupo, (row['grupo'], row['nome'], 'N', row['grupo_ant'], row['estrutura_ant']))
         cur_fdb.execute(insert_subgrupo, (
@@ -70,7 +69,6 @@ def cadest():
     cria_campo("ALTER TABLE Cadest ADD cod_ant varchar(14)")
     cria_campo("ALTER TABLE Cadest ADD tipopro_ant varchar(21)")
     cria_campo("DELETE FROM Cadest")
-    print("Inserindo Cadest...")
 
     i = 0
 
@@ -166,7 +164,7 @@ def cadest():
 								?,?,?,?,?)"""
                           )
 
-    for row in tqdm(consulta):
+    for row in tqdm(consulta, desc='Inserindo Cadest...'):
         i += 1
         grupo = row['grupo']
         subgrp = row['subgrp']
@@ -203,14 +201,13 @@ def almoxarifado():
     cria_campo("ALTER TABLE DESTINO ADD cod_ant varchar(8)")
     cur_fdb.execute("DELETE FROM CENTROCUSTO")
     cur_fdb.execute("DELETE FROM DESTINO")
-    print("Inserindo Almoxarifado...")
 
     consulta = fetchallmap(
         f"select RIGHT('000000000' + replace(almoxarifado, '.', ''),9) as destino, descricao, almoxarifado from mat.AlmoxValid av ")
 
     insert = cur_fdb.prep("insert into destino (COD, DESTI, EMPRESA, COD_ANT) values (?,?,?,?)")
 
-    for row in tqdm(consulta):
+    for row in tqdm(consulta, desc='Inserindo Almoxarifado...'):
         cur_fdb.execute(insert, (row['destino'], row['descricao'], EMPRESA, row['almoxarifado']))
     commit()
 

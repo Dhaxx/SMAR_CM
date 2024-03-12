@@ -7,7 +7,6 @@ def cadlic():
     cria_campo('ALTER TABLE CADLIC ADD criterio_ant varchar(30)')
     cria_campo('ALTER TABLE CADLIC ADD sigla_ant varchar(2)')
     cria_campo('ALTER TABLE CADLIC ADD status_ant varchar(1)')
-    print('Inserindo Cadastro de licitações...')
 
     i = 0
 
@@ -210,7 +209,7 @@ def cadlic():
                                 ) AS subconsulta
                                 ORDER BY proclic, ANO;""")
     
-    for row in tqdm(consulta):
+    for row in tqdm(consulta, desc='Inserindo Cadastro de licitações...'):
         i += 1
         numpro = int(row['numpro'])
         datae = row['datae']
@@ -336,7 +335,6 @@ def prolic_prolics():
     cur_fdb.execute('DELETE FROM PROLICS')
     cur_fdb.execute('DELETE FROM PROLIC')
     cria_campo('alter table prolics add codif_ant varchar(50)')
-    print("Inserindo Proponentes...")
 
     i = 0
 
@@ -413,7 +411,7 @@ def prolic_prolics():
     insert_prolic = cur_fdb.prep('insert into prolic (codif, nome, status, numlic) values (?,?,?,?)')
     insert_prolics = cur_fdb.prep('insert into prolics (sessao, codif, status, representante, numlic, usa_preferencia, codif_ant) values (?,?,?,?,?,?,?)')
 
-    for row in tqdm(consulta):
+    for row in tqdm(consulta, desc='Inserindo Proponentes...'):
         i += 1
         try:
             codif = row['codif'] if row['codif'] is not None else INSMF_FORNECEDOR[row['insmf']]
@@ -439,7 +437,6 @@ def prolic_prolics():
 
 def cadpro_status():
     cur_fdb.execute('DELETE FROM CADPRO_STATUS')
-    print('Inserindo Stauts...')
 
     consulta = cur_fdb.execute("""SELECT
                                     1 sessao,
@@ -455,7 +452,7 @@ def cadpro_status():
     
     insert = cur_fdb.prep('insert into cadpro_status (numlic, sessao, itemp, item) values (?,?,?,?)')
 
-    for row in tqdm(consulta):
+    for row in tqdm(consulta, desc='Inserindo Stauts...'):
         numlic = row['numlic']
         itemp = row['item']
         item = row['item']
@@ -468,7 +465,6 @@ def cadpro_status():
 def cadpro_proposta():
     cur_fdb.execute('DELETE FROM cadpro_proposta')
     commit()
-    print('Inserindo Propostas...')
 
     ###### SELECT DA PROPOSTA COM ITENS DESAGRUPADOS
     consulta = fetchallmap(f"""select DISTINCT * from (select
@@ -482,7 +478,7 @@ def cadpro_proposta():
                                     case when venc is null then 'D' else 'C' end as status,
                                     venc subem,
                                     rtrim(marca) marca,
-                                    insmf,
+                                    rtrim(isnull(insmf,0)) insmf,
                                     right('00000000'+cast(nrolote as varchar),8) lotelic,
                                     sigla sigla_ant,
                                     convit numpro,
@@ -739,7 +735,7 @@ def cadpro_proposta():
     insert = cur_fdb.prep('insert into cadpro_proposta (codif, sessao, numlic, itemp, item, quan1, vaun1, vato1, status, marca, subem) values (?,?,?,?,?,?,?,?,?,?,?)')
     i = 0
 
-    for row in tqdm(consulta):
+    for row in tqdm(consulta, desc='Inserindo Propostas...'):
         i += 1
         try:
             codif = row['codif'] if row['codif'] else INSMF_FORNECEDOR[row['insmf']]
@@ -768,10 +764,11 @@ def cadpro_proposta():
 
 def cadpro_lance():
     cur_fdb.execute('delete from cadpro_lance')
+    cria_campo("alter table cadpro_lance add marca varchar(50)")
     commit()
     print('Inserindo os lances...')
-    cur_fdb.execute("""insert into cadpro_lance (sessao, rodada, codif, itemp, vaunl, vatol, status, subem, numlic)
-                        SELECT sessao, 1 rodada, CODIF, ITEMP, VAUN1, VATO1, 'F' status, SUBEM, numlic FROM CADPRO_PROPOSTA cp where subem = 1""")
+    cur_fdb.execute("""insert into cadpro_lance (sessao, rodada, codif, itemp, vaunl, vatol, status, subem, numlic, marca)
+                        SELECT sessao, 1 rodada, CODIF, ITEMP, VAUN1, VATO1, 'F' status, SUBEM, numlic, marca FROM CADPRO_PROPOSTA cp where subem = 1""")
     commit()
 
 def cadpro_final():
@@ -836,7 +833,8 @@ def cadpro():
                             VATOSOL,
                             TPCONTROLE_SALDO,
                             QTDPED_FORNECEDOR_ANT,
-                            VATOPED_FORNECEDOR_ANT)
+                            VATOPED_FORNECEDOR_ANT,
+                            marca)
                         SELECT
                             a.CODIF,
                             c.CADPRO,
@@ -866,7 +864,8 @@ def cadpro():
                             0,
                             'Q',
                             0,
-                            0
+                            0,
+                            marca
                         FROM
                             CADPRO_LANCE a
                         INNER JOIN CADPRO_STATUS b ON
@@ -910,8 +909,6 @@ def regpreco():
     commit()
 
 def vincula_cotacao_licitacao():
-    print('Inserindo Itens...')
-
     consulta = fetchallmap("""
                             select
                                 anogrupo,
@@ -949,8 +946,8 @@ def vincula_cotacao_licitacao():
     
     update = cur_fdb.prep('Update cadorc set numlic = ?, proclic = ? where numorc = ?')
     
-    for row in tqdm(consulta):
-        numlic = LICITACAO[(row['convit'], row['sigla'], row['anoc'])] #, row['registropreco']
+    for row in tqdm(consulta, desc='Inserindo Itens...'):
+        numlic = LICITACAO[(int(row['convit']), row['sigla'], row['anoc'])] #, row['registropreco']
         try:
             numorc = COTACAO[(row['codgrupo'], row['anoc'], row['registropreco'])]
             cur_fdb.execute(update,(numlic,row['proclic'],numorc))
@@ -960,8 +957,6 @@ def vincula_cotacao_licitacao():
 
 PRODUTOS = produtos()
 def aditamento():
-    print('Inserindo Aditamentos...')
-
     consulta = fetchallmap("""select
                                     b.sigla,
                                     b.convit,
@@ -990,7 +985,7 @@ def aditamento():
     
     update_cadpro = cur_fdb.prep('UPDATE cadpro SET QTDADT = QTDADT + ?, VAUNADT = VAUNADT + ?, VATOADT = VATOADT + ? WHERE numlic = ? AND codif = ? AND cadpro = ?')
 
-    for row in tqdm(consulta):
+    for row in tqdm(consulta, desc='Inserindo Aditamentos...'):
         qtd_aditada = row['qtd']
         vaun_aditada = row['vaun']
         vato_aditada = row['vatoadt']
@@ -1009,7 +1004,6 @@ ITEM_PROPOSTA = item_da_proposta()
 def cadpro_saldo_ant():
     cur_fdb.execute('delete from cadpro_saldo_ant')
     cria_campo('alter table cadpro_saldo_ant add codif_ant varchar(10)')
-    print(f'Inserindo Pedidos Anteriores à {ANO}...')
     ignored = []
 
     insert = cur_fdb.prep("""insert into cadpro_saldo_ant (ano, numlic, item, cadpro, qtdped, vatoped, codif_ant) values (?,?,?,?,?,?,?)""")
@@ -1017,7 +1011,7 @@ def cadpro_saldo_ant():
     consulta = fetchallmap(f"""select
                                     a.sigla,
                                     a.convit,
-                                    a.anoc,
+                                    a.anoc ano,
                                     cast(a.codfor as integer) codif,
                                     b.estrut + '.' + b.grupo + '.' + b.subgrp + '.' + b.itemat + '-' + b.digmat cadpro,
                                     sum(b.qtde) qtde , 
@@ -1046,7 +1040,7 @@ def cadpro_saldo_ant():
                                     a.sigla,
                                     a.convit""")
     
-    for row in tqdm(consulta):
+    for row in tqdm(consulta,desc=f'Inserindo Pedidos Anteriores à {ANO}...'):
         ano = ANO-1
         numlic = LICITACAO[(row['convit'], row['sigla'], row['ano'])]
         cadpro = PRODUTOS[row['cadpro']]
