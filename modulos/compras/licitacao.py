@@ -348,14 +348,14 @@ def prolic_prolics():
                                         cast(convit as integer) numpro,
                                         sigla sigla_ant,
                                         anoc ano,
-                                        cast(codfor as integer) codif,
+                                        cast(codfor as varchar) codif,
                                         case
                                             when selecao = 0 then 'D'
                                             else 'A'
                                         end status,
                                         'N' usa_preferencia,
                                         null nome_ant,
-                                        null insmf
+                                        cast(convit as varchar) insmf
                                     from
                                         mat.MCT70100
                                 union all
@@ -367,7 +367,7 @@ def prolic_prolics():
                                         'A' status,
                                         'N' usa_preferencia,
                                         null nome_ant,
-                                        null insmf
+                                       cast(convit as varchar) insmf
                                     from
                                         mat.mct90400
                                 union all
@@ -478,7 +478,7 @@ def cadpro_proposta():
                                     case when venc is null then 'D' else 'C' end as status,
                                     venc subem,
                                     rtrim(marca) marca,
-                                    rtrim(isnull(insmf,0)) insmf,
+                                    rtrim(isnull(insmf,codfor)) insmf,
                                     right('00000000'+cast(nrolote as varchar),8) lotelic,
                                     sigla sigla_ant,
                                     convit numpro,
@@ -616,7 +616,7 @@ def cadpro_proposta():
                                     case when isnull(class,venc) is null then 'D' else 'C' end as status,
                                     venc subem,
                                     rtrim(marca) marca,
-                                    insmf,
+                                    rtrim(isnull(insmf,codfor)) insmf,
                                     right('00000000'+cast(nrolote as varchar),8) lotelic,
                                     sigla sigla_ant,
                                     convit numpro,
@@ -803,6 +803,7 @@ def cadpro_final():
 
 def cadpro():
     print('Inserindo Cadpro...')
+    cur_fdb.execute('delete from cadpro')
     
     cur_fdb.execute(f"""INSERT INTO
                             CADPRO(CODIF,
@@ -865,7 +866,7 @@ def cadpro():
                             'Q',
                             0,
                             0,
-                            marca
+                            a.marca
                         FROM
                             CADPRO_LANCE a
                         INNER JOIN CADPRO_STATUS b ON
@@ -921,7 +922,7 @@ def vincula_cotacao_licitacao():
                             from
                                 mat.MCT91200
                             where
-                                anogrupo >= 2019
+                                anogrupo >= {ANO-5}
                                 and convit is not null
                                 --Agrupamento RP
                             union all
@@ -936,7 +937,7 @@ def vincula_cotacao_licitacao():
                             from
                                 mat.MCT80200
                             where
-                                anogrupo >= 2019
+                                anogrupo >= {ANO-5}
                                 and convit is not null
                                 --Agrupamento
                             order by
@@ -957,7 +958,7 @@ def vincula_cotacao_licitacao():
 
 PRODUTOS = produtos()
 def aditamento():
-    consulta = fetchallmap("""select
+    consulta = fetchallmap(f"""select
                                     b.sigla,
                                     b.convit,
                                     b.anoc,
@@ -972,10 +973,7 @@ def aditamento():
                                     b.idAditivo = a.IdAditivo
                                 join mat.MCT73300 c on
                                     c.IdAditivo = a.IdAditivo
-                                /*where
-                                    b.convit = 318
-                                    and b.anoc = 2020*/
-                                where b.anoc >= 2019
+                                where b.anoc >= {ANO-5}
                                 GROUP by
                                     b.sigla,
                                     b.convit,
@@ -1047,7 +1045,7 @@ def cadpro_saldo_ant():
         try:
             item = ITEM_PROPOSTA[numlic, cadpro, row['codif']]
         except:
-            ignored.append(f'{row['sigla']}-{row['convit']}/{row['ano']}')
+            # ignored.append(f'{row['sigla']}-{row['convit']}/{row['ano']}')
             continue
         qtdped = row['qtde']
         vatoped = row['total']
@@ -1057,4 +1055,3 @@ def cadpro_saldo_ant():
         except:
             continue
     commit()
-    print(ignored)

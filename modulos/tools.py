@@ -13,6 +13,7 @@ def fornecedores_smar():
     for row in consulta:
         hash_map[row['documento']] = row['razao_social']
     return hash_map
+FORNECEDORES_SMAR = fornecedores_smar()
 
 def extourou_codigo_item(grupo, subgrupo):
     return cur_fdb.execute(
@@ -88,9 +89,9 @@ def cadastra_fornecedor_especifico(insmf):
         nome = FORNECEDORES_SMAR.get(insmf,'Verificar Fornecedor {}'.format(insmf)) #'Verificar Fornecedor {}'.format(insmf)
         cur_fdb.execute(insert,(codif, nome[:50], insmf))
         commit()
-        return codif
+        return codif, nome
     else:
-        return verifica[0]
+        return verifica[0], verifica[1]
     
 def cadastro_fornecedores_faltantes():
     consulta = fetchallmap(f"""select distinct rtrim(isnull(documento,0)) insmf, substring(razao_social,1,18) nome from mat.MCT81800
@@ -363,14 +364,13 @@ def cadastro_fornecedores_faltantes():
     codif = cur_fdb.execute('select max(codif) from desfor').fetchone()[0]
 
     for row in tqdm(consulta, desc='Inserindo Fornecedores Faltantes'):
-        verifica = cur_fdb.execute(f"select nome from desfor where insmf containing '{row['insmf']}'").fetchone()
+        verifica = cur_fdb.execute(f"select codif from desfor where insmf containing '{row['insmf']}'").fetchone()
         if not verifica:
             codif += 1
             nome = row['nome']
             cur_fdb.execute(insert, (codif, nome, row['insmf']))
             commit()
-    fornecedores_smar()
-FORNECEDORES_SMAR = cadastro_fornecedores_faltantes()
+    return fornecedores()
     
 def ajustar_ccusto_cotacao():
     print('Ajustando Centro de custos da cotação...')
