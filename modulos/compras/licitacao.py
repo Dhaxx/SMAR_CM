@@ -41,13 +41,14 @@ def cadlic():
                                 codmod,
                                 empresa,
                                 valor,
-                                detalhe)
+                                detalhe,
+                                anomod)
                             VALUES(?,?,?,?,?,
                                 ?,?,?,?,?,
                                 ?,?,?,?,?,
                                 ?,?,?,?,?,
                                 ?,?,?,?,?,
-                                ?,?,?,?,?,?,?)""")
+                                ?,?,?,?,?,?,?,?)""")
     
     consulta = fetchallmap(f"""SELECT RIGHT('000000'+CAST(ROW_NUMBER() OVER (ORDER BY ano) AS VARCHAR), 6)+'/'+SUBSTRING(ano, 3, 2) proclic,
                                     RIGHT('000000'+CAST(ROW_NUMBER() OVER (ORDER BY ano) AS VARCHAR), 6) numero, 
@@ -243,9 +244,10 @@ def cadlic():
         empresa = EMPRESA
         valor = row['valor']
         detalhe = row['detalhe']
+        anomod = row['ano']
 
         cur_fdb.execute(insert,(numpro, datae, dtpub, dtenc, horabe, discr, discr7, modlic, dthom, dtadj, comp, numero, ano, registropreco, ctlance, obra, proclic, numlic, liberacompras, microempresa,
-                                 licnova, tlance, mult_entidade, processo_ano, LEI_INVERTFASESTCE, criterio_ant, sigla_ant, status_ant, codmod, empresa, valor, detalhe))
+                                 licnova, tlance, mult_entidade, processo_ano, LEI_INVERTFASESTCE, criterio_ant, sigla_ant, status_ant, codmod, empresa, valor, detalhe, anomod))
         
         if i % 1000 == 0:
             commit()
@@ -414,10 +416,10 @@ def prolic_prolics():
     for row in tqdm(consulta, desc='Inserindo Proponentes...'):
         i += 1
         try:
-            codif = row['codif'] if row['codif'] is not None else INSMF_FORNECEDOR[row['insmf']]
+            codif = INSMF_FORNECEDOR.get(row['insmf'], row['codif']) 
             nome = NOME_FORNECEDOR[codif]
         except:
-            filtro = cadastra_fornecedor_especifico(row['insmf'])
+            filtro = cadastra_fornecedor_especifico(row['insmf'], row['codif'])
             codif = filtro[0]
             nome = filtro[1]
             INSMF_FORNECEDOR[row['insmf']] = codif
@@ -738,9 +740,9 @@ def cadpro_proposta():
     for row in tqdm(consulta, desc='Inserindo Propostas...'):
         i += 1
         try:
-            codif = row['codif'] if row['codif'] else INSMF_FORNECEDOR[row['insmf']]
+            codif = INSMF_FORNECEDOR.get(row['insmf'], row['codif']) 
         except:
-            codif = cadastra_fornecedor_especifico(row['insmf'])
+            codif = cadastra_fornecedor_especifico(row['insmf'], row['codif'])
             INSMF_FORNECEDOR[row['insmf']] = codif # Atualiza o dicionário
         sessao = row['sessao']
         numlic = LICITACAO[(row['numpro'], row['sigla_ant'], row['ano'])] #, row['registropreco']
@@ -910,7 +912,7 @@ def regpreco():
     commit()
 
 def vincula_cotacao_licitacao():
-    consulta = fetchallmap("""
+    consulta = fetchallmap(f"""
                             select
                                 anogrupo,
                                 cast(codgrupo as varchar) codgrupo,
@@ -1002,7 +1004,6 @@ ITEM_PROPOSTA = item_da_proposta()
 def cadpro_saldo_ant():
     cur_fdb.execute('delete from cadpro_saldo_ant')
     cria_campo('alter table cadpro_saldo_ant add codif_ant varchar(10)')
-    ignored = []
 
     insert = cur_fdb.prep("""insert into cadpro_saldo_ant (ano, numlic, item, cadpro, qtdped, vatoped, codif_ant) values (?,?,?,?,?,?,?)""")
 
@@ -1052,6 +1053,6 @@ def cadpro_saldo_ant():
         codif_ant = row['codif']
         try:
             cur_fdb.execute(insert,(ano, numlic, item, cadpro, qtdped, vatoped, codif_ant))
+            commit()
         except:
             continue
-    commit()

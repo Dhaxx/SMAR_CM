@@ -54,7 +54,7 @@ def cadastro():
         case when cabecalho.codgrupo  is null then
         'Processo de Compra: ' +  cast(cabecalho.numreq as varchar) + '/' + cast(cabecalho.anoreq as varchar)
         else 'Agrupamento: ' +  cast(cabecalho.codgrupo  as varchar) + '/' + cast(cabecalho.anogrupo as varchar) end obs,
-        'AP' status,
+        'EC' status,
         'S' liberado,
         isnull(nivel1+'.'+nivel2+'.'+nivel3+'.'+nivel4+'.'+nivel5,0) codccusto,
         'L' liberado_tela,
@@ -96,7 +96,7 @@ def cadastro():
         case when cabecalho.codgrupo  is null then
         'Processo de Compra: ' +  cast(cabecalho.numreq as varchar) + '/' + cast(cabecalho.anoreq as varchar)
         else 'Agrupamento: ' +  cast(cabecalho.codgrupo  as varchar) + '/' + cast(cabecalho.anogrupo as varchar) end obs,
-        'AP' status,
+        'EC' status,
         'S' liberado,
         isnull(nivel1+'.'+nivel2+'.'+nivel3+'.'+nivel4+'.'+nivel5,0) codccusto,
         'L' liberado_tela,
@@ -129,7 +129,7 @@ def cadastro():
         case when cabecalho.codgrupo  is null then
         'Processo de Compra: ' +  cast(cabecalho.numreq as varchar) + '/' + cast(cabecalho.anoreq as varchar)
         else 'Agrupamento: ' +  cast(cabecalho.codgrupo  as varchar) + '/' + cast(cabecalho.anogrupo as varchar) end obs,
-        'AP' status,
+        'EC' status,
         'S' liberado,
         isnull(nivel1+'.'+nivel2+'.'+nivel3+'.'+nivel4+'.'+nivel5,0) codccusto,
         'L' liberado_tela,
@@ -171,7 +171,7 @@ def cadastro():
         case when cabecalho.codgrupo  is null then
         'Processo de Compra: ' +  cast(cabecalho.numreq as varchar) + '/' + cast(cabecalho.anoreq as varchar)
         else 'Agrupamento: ' +  cast(cabecalho.codgrupo  as varchar) + '/' + cast(cabecalho.anogrupo as varchar) end obs,
-        'AP' status,
+        'EC' status,
         'S' liberado,
         isnull(nivel1+'.'+nivel2+'.'+nivel3+'.'+nivel4+'.'+nivel5,0) codccusto,
         'L' liberado_tela,
@@ -326,7 +326,7 @@ def valores():
             case when cabecalho.codgrupo  is null then
             'Processo de Compra: ' +  cast(cabecalho.numreq as varchar) + '/' + cast(cabecalho.anoreq as varchar)
             else 'Agrupamento: ' +  cast(cabecalho.codgrupo  as varchar) + '/' + cast(cabecalho.anogrupo as varchar) end obs,
-            'AP' status,
+            'EC' status,
             'S' liberado,
             coalesce(cabreq.Idnivel5,0) codccusto,
             'L' liberado_tela,
@@ -368,7 +368,7 @@ def valores():
         case when cabecalho.codgrupo  is null then
         'Processo de Compra: ' +  cast(cabecalho.numreq as varchar) + '/' + cast(cabecalho.anoreq as varchar)
         else 'Agrupamento: ' +  cast(cabecalho.codgrupo  as varchar) + '/' + cast(cabecalho.anogrupo as varchar) end obs,
-        'AP' status,
+        'EC' status,
         'S' liberado,
         coalesce(cabreq.Idnivel5,0) codccusto,
         'L' liberado_tela,
@@ -401,7 +401,7 @@ def valores():
         case when cabecalho.codgrupo  is null then
         'Processo de Compra: ' +  cast(cabecalho.numreq as varchar) + '/' + cast(cabecalho.anoreq as varchar)
         else 'Agrupamento: ' +  cast(cabecalho.codgrupo  as varchar) + '/' + cast(cabecalho.anogrupo as varchar) end obs,
-        'AP' status,
+        'EC' status,
         'S' liberado,
         coalesce(cabreq.Idnivel5,0) codccusto,
         'L' liberado_tela,
@@ -443,7 +443,7 @@ def valores():
         case when cabecalho.codgrupo  is null then
         'Processo de Compra: ' +  cast(cabecalho.numreq as varchar) + '/' + cast(cabecalho.anoreq as varchar)
         else 'Agrupamento: ' +  cast(cabecalho.codgrupo  as varchar) + '/' + cast(cabecalho.anogrupo as varchar) end obs,
-        'AP' status,
+        'EC' status,
         'S' liberado,
         coalesce(cabreq.Idnivel5,0) codccusto,
         'L' liberado_tela,
