@@ -342,8 +342,6 @@ def cadprolic():
     cur_fdb.execute('DELETE FROM CADPROLIC')
     cria_campo('ALTER TABLE ICADORC ADD numlic varchar(10)')
     vincula_cotacao_licitacao()
-    # cria_campo('ALTER TABLE VCADORC ADD numlic varchar(10)')
-    # cur_fdb.execute('UPDATE VCADORC a SET a.numlic = (SELECT b.numlic FROM cadorc b WHERE a.NUMORC=b.numorc AND b.numlic IS NOT null)')
     cur_fdb.execute('UPDATE ICADORC a SET a.numlic = (SELECT b.numlic FROM cadorc b WHERE a.NUMORC=b.numorc AND b.numlic IS NOT null)')
     commit()
 
@@ -381,8 +379,6 @@ def cadprolic():
                             tlance,
                             item_ag,
                             id_cadorc) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""")
-    
-    # insert_det = cur_fdb.prep("""INSERT INTO CADPROLIC_DETALHE (NUMLIC,item,CADPRO,quan1,VAMED1,VATOMED1,marca,CODCCUSTO,ITEM_CADPROLIC) values (?,?,?,?,?,?,?,?,?)""")
 
     i = 0
     
@@ -404,7 +400,6 @@ def cadprolic():
         marca = None
 
         cur_fdb.execute(insert,(item, item_mask, numorc, cadpro, quan1, vamed1, vatomed1, codccusto, reduz, numlic, microempresa, tlance, item_ag, id_cadorc))
-        # cur_fdb.execute(insert_det,(numlic, item, cadpro, quan1, vamed1, vatomed1, marca, codccusto, item))
         commit()
     cur_fdb.execute('''INSERT INTO CADPROLIC_DETALHE (NUMLIC,item,CADPRO,quan1,VAMED1,VATOMED1,marca,CODCCUSTO,ITEM_CADPROLIC) 
                        select numlic, item, cadpro, quan1, vamed1, vatomed1, marca, codccusto, item from cadprolic''')
@@ -1124,7 +1119,6 @@ def cadpro_saldo_ant():
         try:
             item = ITEM_PROPOSTA[numlic, cadpro, row['codif']]
         except:
-            # ignored.append(f'{row['sigla']}-{row['convit']}/{row['ano']}')
             continue
         qtdped = row['qtde']
         vatoped = row['total']
