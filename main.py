@@ -15,10 +15,12 @@ def main():
     # base.cadest()
     # base.almoxarifado()
     # base.centro_custo()
+
     # solicitacoes.cadastro()
     # cotacoes.cadastro()
     # cotacoes.fornecedores()
     # cotacoes.valores()
+
     # licitacao.cadlic()
     # licitacao.cadprolic()
     # tools.fornecedore_gerais()
@@ -30,7 +32,9 @@ def main():
     # licitacao.cadpro() 
     # licitacao.regpreco() 
     # licitacao.aditamento()
-    licitacao.cadpro_saldo_ant() # Ajustar as demais tabelas / Conferir os processos faltantes
+    # licitacao.cadpro_saldo_ant() # Ajustar as demais tabelas / Conferir os processos faltantes
+    licitacao.vincula_contratos()
+
     # pedidos.cabecalho()
     # pedidos.itens()
     

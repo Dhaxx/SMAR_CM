@@ -42,17 +42,25 @@ def cadlic():
                                 empresa,
                                 valor,
                                 detalhe,
-                                anomod)
+                                anomod,
+                                processo)
                             VALUES(?,?,?,?,?,
                                 ?,?,?,?,?,
                                 ?,?,?,?,?,
                                 ?,?,?,?,?,
                                 ?,?,?,?,?,
-                                ?,?,?,?,?,?,?,?)""")
+                                ?,?,?,?,?,?,?,?,?)""")
     
-    consulta = fetchallmap(f"""SELECT RIGHT('000000'+CAST(ROW_NUMBER() OVER (ORDER BY ano) AS VARCHAR), 6)+'/'+SUBSTRING(ano, 3, 2) proclic,
-                                    RIGHT('000000'+CAST(ROW_NUMBER() OVER (ORDER BY ano) AS VARCHAR), 6) numero, 
-                                    *, 
+    consulta = fetchallmap(f"""SELECT
+                                    RIGHT('000000' + CAST(ROW_NUMBER() OVER (
+                                ORDER BY
+                                    ano) AS VARCHAR),
+                                    6)+ '/' + SUBSTRING(ano, 3, 2) proclic,
+                                    RIGHT('000000' + CAST(ROW_NUMBER() OVER (
+                                ORDER BY
+                                    ano) AS VARCHAR),
+                                    6) numero,
+                                    *,
                                     CASE
                                         when modlic = 'DI01' then 1
                                         when modlic = 'CS01' then 7
@@ -63,48 +71,75 @@ def cadlic():
                                         WHEN MODLIC = 'CON4' THEN 4
                                         WHEN MODLIC = 'PP01' THEN 8
                                         WHEN MODLIC = 'TOM3' THEN 3
-                                END codmod FROM (
+                                    END codmod
+                                FROM
+                                    (
                                     SELECT
-                                        convit numpro,
+                                        c676.convit numpro,
                                         dtAtaAberturaProposta datae,
                                         dtpublicresult dtpub,
                                         dtence dtenc,
                                         '00:00' horabe,
-                                        substring(ISNULL(ISNULL(notaconv, notaconvtxt), objeto_licitacao),0,1024) discr,
-                                        ISNULL(ISNULL(notaconv, notaconvtxt), objeto_licitacao) detalhe,
-                                        CASE 
+                                        substring(ISNULL(ISNULL(notaconv, notaconvtxt), objeto_licitacao), 0, 1024) discr,
+                                        ISNULL(ISNULL(notaconv,
+                                        notaconvtxt),
+                                        objeto_licitacao) detalhe,
+                                        CASE
                                             WHEN CriterioJulgamento IN ('Dispensa', 'Inexigibilidade', 'Menor Preço') THEN 'Menor Preço Unitário'
                                             WHEN CriterioJulgamento IN ('Maior Lance ou Oferta', 'Maior Desconto') THEN 'Maior Desconto'
                                             WHEN CriterioJulgamento IN ('Taxa Administrativa') THEN 'Menor Acrescimo'
                                         END discr7,
-                                        CASE 
-                                            WHEN sigla IN (00) THEN 'DI01' --MODALIDADES DE LICITAÇÃO
-                                            WHEN sigla IN (01) THEN 'CS01' --CONCURSO
-                                            WHEN sigla IN (02) THEN 'CCO2' --siglae
-                                            WHEN sigla IN (03) THEN 'TOM3' --TOMADA 
-                                            WHEN sigla IN (04) THEN 'CON4' --CONCORRENCIA
-                                            WHEN sigla IN (05) THEN 'DI01' --DISPENSA
-                                            WHEN sigla IN (06) THEN 'IN01' --INEXIGIBILIDADE
-                                            WHEN sigla IN (07) THEN 'PP01' --Pregão Presencial
-                                            WHEN sigla IN (08) THEN 'PE01' --BEC - BOLSA ELETRONICA                            
-                                            WHEN sigla IN (09) THEN 'DI01' --OUTROS
-                                            WHEN sigla IN (10) THEN 'CCO5' --siglaE (Obras)
-                                            WHEN sigla IN (11) THEN 'DI01' --DISPENSA DE LICITAÇÃO - INCISO I                  
-                                            WHEN sigla IN (12) THEN 'DI01' --DISPENSA DE LICITAÇÃO - DEMAIS INCISOS            
-                                            WHEN sigla IN (13) THEN 'TOM6' --TOMADA DE PREÇOS (OBRAS E SERVIÇOS DE ENGENHARIA) 
-                                            WHEN sigla IN (14) THEN 'CON7' --CONCORRÊNCIA (OBRAS E SERVIÇOS DE ENGENHARIA)      
-                                            WHEN sigla IN (15) THEN 'DI01' --DISP
-                                            WHEN sigla IN (16) THEN 'DI01' --CHAMADA PUB
-                                            WHEN sigla IN (17) THEN 'DI01' --DISPENSA DE LICITAÇÃO - LEI Nº 14.133/2021     
-                                            WHEN sigla IN (18) THEN 'IN01' --INEXIGIBILIDADE - LEI Nº 14.133/2021    
-                                            WHEN sigla IN (19) THEN 'PE01' --Pregão - Eletrônico                                         
-                                            WHEN sigla IN (20) THEN 'CON4' --CONCORRÊNCIA ELETRÔNICA
-                                            WHEN sigla IN (21) THEN 'LEIL' --LEILÃO
-                                            WHEN sigla IN (22) THEN 'DI01' --Pregão Presencial
+                                        CASE
+                                            WHEN c676.sigla IN (00) THEN 'DI01'
+                                            --MODALIDADES DE LICITAÇÃO
+                                            WHEN c676.sigla IN (01) THEN 'CS01'
+                                            --CONCURSO
+                                            WHEN c676.sigla IN (02) THEN 'CCO2'
+                                            --siglae
+                                            WHEN c676.sigla IN (03) THEN 'TOM3'
+                                            --TOMADA 
+                                            WHEN c676.sigla IN (04) THEN 'CON4'
+                                            --CONCORRENCIA
+                                            WHEN c676.sigla IN (05) THEN 'DI01'
+                                            --DISPENSA
+                                            WHEN c676.sigla IN (06) THEN 'IN01'
+                                            --INEXIGIBILIDADE
+                                            WHEN c676.sigla IN (07) THEN 'PP01'
+                                            --Pregão Presencial
+                                            WHEN c676.sigla IN (08) THEN 'PE01'
+                                            --BEC - BOLSA ELETRONICA                            
+                                            WHEN c676.sigla IN (09) THEN 'DI01'
+                                            --OUTROS
+                                            WHEN c676.sigla IN (10) THEN 'CCO5'
+                                            --siglaE (Obras)
+                                            WHEN c676.sigla IN (11) THEN 'DI01'
+                                            --DISPENSA DE LICITAÇÃO - INCISO I                  
+                                            WHEN c676.sigla IN (12) THEN 'DI01'
+                                            --DISPENSA DE LICITAÇÃO - DEMAIS INCISOS            
+                                            WHEN c676.sigla IN (13) THEN 'TOM6'
+                                            --TOMADA DE PREÇOS (OBRAS E SERVIÇOS DE ENGENHARIA) 
+                                            WHEN c676.sigla IN (14) THEN 'CON7'
+                                            --CONCORRÊNCIA (OBRAS E SERVIÇOS DE ENGENHARIA)      
+                                            WHEN c676.sigla IN (15) THEN 'DI01'
+                                            --DISP
+                                            WHEN c676.sigla IN (16) THEN 'DI01'
+                                            --CHAMADA PUB
+                                            WHEN c676.sigla IN (17) THEN 'DI01'
+                                            --DISPENSA DE LICITAÇÃO - LEI Nº 14.133/2021     
+                                            WHEN c676.sigla IN (18) THEN 'IN01'
+                                            --INEXIGIBILIDADE - LEI Nº 14.133/2021    
+                                            WHEN c676.sigla IN (19) THEN 'PE01'
+                                            --Pregão - Eletrônico                                         
+                                            WHEN c676.sigla IN (20) THEN 'CON4'
+                                            --CONCORRÊNCIA ELETRÔNICA
+                                            WHEN c676.sigla IN (21) THEN 'LEIL'
+                                            --LEILÃO
+                                            WHEN c676.sigla IN (22) THEN 'DI01'
+                                            --Pregão Presencial
                                         END modlic,
                                         dtPublicacaoHomologacao dthom,
                                         dataadjudicacao dtadj,
-                                        CASE 
+                                        CASE
                                             WHEN status IN ('R') THEN 7
                                             WHEN status IN ('F', 'C') THEN 6
                                             WHEN status IN ('D') THEN 5
@@ -113,69 +148,100 @@ def cadlic():
                                             WHEN status IN ('A') THEN 2
                                             ELSE 1
                                         END comp,
-                                        anoc ano,
+                                        c676.anoc ano,
                                         'N' registropreco,
                                         'U' ctlance,
-                                        CASE 
-                                            WHEN sigla IN (10,13,14) THEN 'S'
+                                        CASE
+                                            WHEN c676.sigla IN (10, 13, 14) THEN 'S'
                                             ELSE 'N'
                                         END obra,
                                         idagenda numlic,
-                                        CASE 
-                                            WHEN status IN ('H','X','P') THEN 'S'
+                                        CASE
+                                            WHEN status IN ('H', 'X', 'P') THEN 'S'
                                             ELSE NULL
                                         END liberacompra,
                                         2 microempresa,
                                         1 licnova,
                                         '$' tlance,
                                         'N' mult_entidade,
-                                        anoc processo_ano,
+                                        c676.anoc processo_ano,
                                         'N' LEI_INVERTFASESTCE,
                                         valorEstimado valor,
                                         CriterioJulgamento criterio_ant,
-                                        sigla sigla_ant,
-                                        status status_ant
+                                        c676.sigla sigla_ant,
+                                        status status_ant,
+                                        substring(rtrim(cpcpro), 1, 9) processo
                                     FROM
-                                        MAT.MCT67600
-                                    WHERE anoc >= {ANO-5}
-                                union ALL 
-                                SELECT
-                                        convit numpro,
-                                        dtAtaAberturaProposta datae,
-                                        dtpublicresult dtpub,
-                                        dtence dtenc,
+                                        MAT.MCT67600 c676
+                                    left join mat.MCT80600 c806 on
+                                        c806.convit = c676.convit
+                                        and c806.anoc = c676.anoc
+                                        and c806.sigla = c676.sigla
+                                    WHERE
+                                        c676.anoc >= {ANO-5}
+                                union ALL
+                                    SELECT
+                                        c914.convit numpro,
+                                        c914.dtAtaAberturaProposta datae,
+                                        c914.dtpublicresult dtpub,
+                                        c914.dtence dtenc,
                                         '00:00' horabe,
-                                        substring(ISNULL(ISNULL(objeto_licitacao, notaconv),nota2),0,1024) discr,
-                                        ISNULL(ISNULL(objeto_licitacao, notaconv),nota2) detalhe,
+                                        substring(ISNULL(ISNULL(objeto_licitacao, notaconv), nota2), 0, 1024) discr,
+                                        ISNULL(ISNULL(objeto_licitacao,
+                                        notaconv),
+                                        nota2) detalhe,
                                         'Menor Preço Unitário' discr7,
-                                        CASE 
-                                            WHEN sigla IN (00) THEN 'DI01' --MODALIDADES DE LICITAÇÃO
-                                            WHEN sigla IN (01) THEN 'CS01' --CONCURSO
-                                            WHEN sigla IN (02) THEN 'CCO2' --siglae
-                                            WHEN sigla IN (03) THEN 'TOM3' --TOMADA 
-                                            WHEN sigla IN (04) THEN 'CON4' --CONCORRENCIA
-                                            WHEN sigla IN (05) THEN 'DI01' --DISPENSA
-                                            WHEN sigla IN (06) THEN 'IN01' --INEXIGIBILIDADE
-                                            WHEN sigla IN (07) THEN 'PP01' --Pregão Presencial
-                                            WHEN sigla IN (08) THEN 'PE01' --BEC - BOLSA ELETRONICA                            
-                                            WHEN sigla IN (09) THEN 'DI01' --OUTROS
-                                            WHEN sigla IN (10) THEN 'CCO5' --siglaE (Obras)
-                                            WHEN sigla IN (11) THEN 'DI01' --DISPENSA DE LICITAÇÃO - INCISO I                  
-                                            WHEN sigla IN (12) THEN 'DI01' --DISPENSA DE LICITAÇÃO - DEMAIS INCISOS            
-                                            WHEN sigla IN (13) THEN 'TOM6' --TOMADA DE PREÇOS (OBRAS E SERVIÇOS DE ENGENHARIA) 
-                                            WHEN sigla IN (14) THEN 'CON7' --CONCORRÊNCIA (OBRAS E SERVIÇOS DE ENGENHARIA)      
-                                            WHEN sigla IN (15) THEN 'DI01' --DISP
-                                            WHEN sigla IN (16) THEN 'DI01' --CHAMADA PUB
-                                            WHEN sigla IN (17) THEN 'DI01' --DISPENSA DE LICITAÇÃO - LEI Nº 14.133/2021     
-                                            WHEN sigla IN (18) THEN 'IN01' --INEXIGIBILIDADE - LEI Nº 14.133/2021    
-                                            WHEN sigla IN (19) THEN 'PE01' --Pregão - Eletrônico                                         
-                                            WHEN sigla IN (20) THEN 'CON4' --CONCORRÊNCIA ELETRÔNICA
-                                            WHEN sigla IN (21) THEN 'LEIL' --LEILÃO
-                                            WHEN sigla IN (22) THEN 'DI01' --Pregão Presencial
+                                        CASE
+                                            WHEN c914.sigla IN (00) THEN 'DI01'
+                                            --MODALIDADES DE LICITAÇÃO
+                                            WHEN c914.sigla IN (01) THEN 'CS01'
+                                            --CONCURSO
+                                            WHEN c914.sigla IN (02) THEN 'CCO2'
+                                            --siglae
+                                            WHEN c914.sigla IN (03) THEN 'TOM3'
+                                            --TOMADA 
+                                            WHEN c914.sigla IN (04) THEN 'CON4'
+                                            --CONCORRENCIA
+                                            WHEN c914.sigla IN (05) THEN 'DI01'
+                                            --DISPENSA
+                                            WHEN c914.sigla IN (06) THEN 'IN01'
+                                            --INEXIGIBILIDADE
+                                            WHEN c914.sigla IN (07) THEN 'PP01'
+                                            --Pregão Presencial
+                                            WHEN c914.sigla IN (08) THEN 'PE01'
+                                            --BEC - BOLSA ELETRONICA                            
+                                            WHEN c914.sigla IN (09) THEN 'DI01'
+                                            --OUTROS
+                                            WHEN c914.sigla IN (10) THEN 'CCO5'
+                                            --siglaE (Obras)
+                                            WHEN c914.sigla IN (11) THEN 'DI01'
+                                            --DISPENSA DE LICITAÇÃO - INCISO I                  
+                                            WHEN c914.sigla IN (12) THEN 'DI01'
+                                            --DISPENSA DE LICITAÇÃO - DEMAIS INCISOS            
+                                            WHEN c914.sigla IN (13) THEN 'TOM6'
+                                            --TOMADA DE PREÇOS (OBRAS E SERVIÇOS DE ENGENHARIA) 
+                                            WHEN c914.sigla IN (14) THEN 'CON7'
+                                            --CONCORRÊNCIA (OBRAS E SERVIÇOS DE ENGENHARIA)      
+                                            WHEN c914.sigla IN (15) THEN 'DI01'
+                                            --DISP
+                                            WHEN c914.sigla IN (16) THEN 'DI01'
+                                            --CHAMADA PUB
+                                            WHEN c914.sigla IN (17) THEN 'DI01'
+                                            --DISPENSA DE LICITAÇÃO - LEI Nº 14.133/2021     
+                                            WHEN c914.sigla IN (18) THEN 'IN01'
+                                            --INEXIGIBILIDADE - LEI Nº 14.133/2021    
+                                            WHEN c914.sigla IN (19) THEN 'PE01'
+                                            --Pregão - Eletrônico                                         
+                                            WHEN c914.sigla IN (20) THEN 'CON4'
+                                            --CONCORRÊNCIA ELETRÔNICA
+                                            WHEN c914.sigla IN (21) THEN 'LEIL'
+                                            --LEILÃO
+                                            WHEN c914.sigla IN (22) THEN 'DI01'
+                                            --Pregão Presencial
                                         END modlic,
                                         dtPublicacaoHomologacao dthom,
                                         dataadjudicacao dtadj,
-                                        CASE 
+                                        CASE
                                             WHEN status IN ('R') THEN 7
                                             WHEN status IN ('F', 'C') THEN 6
                                             WHEN status IN ('D') THEN 5
@@ -184,31 +250,41 @@ def cadlic():
                                             WHEN status IN ('A') THEN 2
                                             ELSE 1
                                         END comp,
-                                        anoc ano,
+                                        c914.anoc ano,
                                         'S' registropreco,
                                         'U' ctlance,
-                                        CASE 
-                                            WHEN sigla IN (10,13,14) THEN 'S'
+                                        CASE
+                                            WHEN c914.sigla IN (10, 13, 14) THEN 'S'
                                             ELSE 'N'
                                         END obra,
                                         idagendaRP numlic,
-                                        CASE 
-                                            WHEN status IN ('H','X','P') THEN 'S'
+                                        CASE
+                                            WHEN status IN ('H', 'X', 'P') THEN 'S'
                                             ELSE NULL
                                         END liberacompra,
                                         2 microempresa,
                                         1 licnova,
                                         '$' tlance,
                                         'N' mult_entidade,
-                                        anoc processo_ano,
+                                        c914.anoc processo_ano,
                                         'N' LEI_INVERTFASESTCE,
                                         valorEstimado valor,
                                         CriterioAceitabilidade criterio_ant,
-                                        sigla sigla_ant,
-                                        status status_ant
-                                    FROM mat.MCT91400 where anoc >= {ANO-5}
-                                ) AS subconsulta
-                                ORDER BY proclic, ANO;""")
+                                        c914.sigla sigla_ant,
+                                        status status_ant,
+                                        substring(rtrim(cpcpro), 1, 9) processo
+                                    FROM
+                                        mat.MCT91400 c914
+                                    left join mat.MCT90300 c903 on
+                                        c903.convit = c914.convit
+                                        and c903.anoc = c914.anoc
+                                        and c903.sigla = c914.sigla
+                                    where
+                                        c914.anoc >= {ANO-5}
+                                                                ) AS subconsulta
+                                ORDER BY
+                                    proclic,
+                                    ANO;""")
     
     for row in tqdm(consulta, desc='Inserindo Cadastro de licitações...'):
         i += 1
@@ -245,9 +321,10 @@ def cadlic():
         valor = row['valor']
         detalhe = row['detalhe']
         anomod = row['ano']
+        processo = row['processo']
 
         cur_fdb.execute(insert,(numpro, datae, dtpub, dtenc, horabe, discr, discr7, modlic, dthom, dtadj, comp, numero, ano, registropreco, ctlance, obra, proclic, numlic, liberacompras, microempresa,
-                                 licnova, tlance, mult_entidade, processo_ano, LEI_INVERTFASESTCE, criterio_ant, sigla_ant, status_ant, codmod, empresa, valor, detalhe, anomod))
+                                 licnova, tlance, mult_entidade, processo_ano, LEI_INVERTFASESTCE, criterio_ant, sigla_ant, status_ant, codmod, empresa, valor, detalhe, anomod, processo))
         
         if i % 1000 == 0:
             commit()
@@ -256,6 +333,7 @@ def cadlic():
                   SELECT L.NUMLIC, CAST(1 AS INTEGER), L.DTREAL, L.HORREAL, L.COMP, L.DTENC, L.HORENC, CAST('T' AS VARCHAR(1)), CAST('O' AS VARCHAR(1)) FROM CADLIC L 
                   WHERE numlic not in (SELECT FIRST 1 S.NUMLIC FROM CADLIC_SESSAO S WHERE S.NUMLIC = L.NUMLIC)''')
     cur_fdb.execute('''UPDATE cadlic SET MASCMOD = SIGLA_ANT||'-'||NUMPRO||'/'||ANO''')
+    cur_fdb.execute('UPDATE CONTRATOS a SET a.PROCLIC = (SELECT b.proclic FROM cadlic b WHERE b.processo = a.proclic AND a.ano = b.ano)')
     commit()
 
 COTACAO = cotacoes()
