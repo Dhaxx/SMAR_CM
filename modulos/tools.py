@@ -190,3 +190,21 @@ def veiculo_marca():
     for row in cur_fdb.fetchallmap():
         hash_map[row['descricao_mar']] = row['codigo_mar']
     return hash_map
+
+def unidades():
+    hash_map = {}
+
+    cur_fdb.execute('select pkant, codigo_des from pt_cadpatd')
+
+    for row in cur_fdb.fetchallmap():
+        hash_map[row['pkant']] = row['codigo_des']
+    return hash_map
+
+def subunidades():
+    hash_map = {}
+
+    cur_fdb.execute('select pkant, codigo_des_set from pt_cadpats')
+
+    for row in cur_fdb.fetchallmap():
+        hash_map[row['pkant']] = row['codigo_des']
+    return hash_map

@@ -1,11 +1,5 @@
-from modulos.compras import base
-from modulos.compras import solicitacoes
-from modulos.compras import licitacao
-from modulos.compras import cotacoes
-from modulos.compras import pedidos
-from modulos.compras import estoque
-from modulos.frotas import motorista
-from modulos.frotas import veiculos
+from modulos.compras import *
+from modulos.frotas import *
 from modulos import tools
 import conexao
 
@@ -14,7 +8,7 @@ def main():
     # base.grupo_e_subgrupo()
     # base.cadest()
     # base.almoxarifado()
-    # base.centro_custo()
+    base.centro_custo()
 
     # solicitacoes.cadastro()
     # cotacoes.cadastro()
@@ -33,7 +27,6 @@ def main():
     # licitacao.regpreco() 
     # licitacao.aditamento()
     # licitacao.cadpro_saldo_ant() # Ajustar as demais tabelas / Conferir os processos faltantes
-    licitacao.vincula_contratos()
 
     # pedidos.cabecalho()
     # pedidos.itens()
