@@ -1,5 +1,6 @@
 from modulos.compras import *
 from modulos.frotas import *
+from modulos.patrimonio import *
 from modulos import tools
 import conexao
 
@@ -8,7 +9,7 @@ def main():
     # base.grupo_e_subgrupo()
     # base.cadest()
     # base.almoxarifado()
-    base.centro_custo()
+    # base.centro_custo()
 
     # solicitacoes.cadastro()
     # cotacoes.cadastro()
@@ -42,5 +43,15 @@ def main():
     # veiculos.cadastro()   
     # conexao.cur_sql.execute('USE smar_compras')
 
+    # base.tipos_mov()
+    # base.tipos_ajuste()
+    # base.tipos_baixa()
+    # base.tipos_bens()
+    # base.tipos_situacao()
+    # base.grupos()
+    # base.unidade_subunidade()
+
+    cadastro.bens()
+    
 if __name__ == '__main__':
     main()

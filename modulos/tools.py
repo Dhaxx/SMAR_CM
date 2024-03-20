@@ -192,6 +192,7 @@ def veiculo_marca():
     return hash_map
 
 def unidades():
+    cria_campo('alter table pt_cadpatd add pkant varchar(20)')
     hash_map = {}
 
     cur_fdb.execute('select pkant, codigo_des from pt_cadpatd')
@@ -201,10 +202,11 @@ def unidades():
     return hash_map
 
 def subunidades():
+    cria_campo('alter table pt_cadpats add pkant varchar(20)')
     hash_map = {}
 
-    cur_fdb.execute('select pkant, codigo_des_set from pt_cadpats')
+    cur_fdb.execute('select pkant, codigo_set from pt_cadpats')
 
     for row in cur_fdb.fetchallmap():
-        hash_map[row['pkant']] = row['codigo_des']
+        hash_map[row['pkant']] = row['codigo_set']
     return hash_map
