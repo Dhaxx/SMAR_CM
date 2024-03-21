@@ -8,7 +8,7 @@ def bens():
                                 idPatMob as codigo_pat,
                                 right(c.pchapa,
                                 6) as chapa_pat,
-                                substring(rtrim(replace(c.despro , char(9), '')),1,255) as discr_pat,
+                                substring(rtrim(replace(c.despro , char(9), '')), 1, 255) as discr_pat,
                                 obsgeral,
                                 1 as codigo_gru_pat,
                                 case
@@ -35,13 +35,16 @@ def bens():
                                     else Null
                                 end dae_pat,
                                 (cast(c.vlrresidual as float)) as valres_pat,
-                                case 
+                                case
                                     when c.qtmesvidamovel <> 0 then 'M'
                                     else null
                                 end percentemp_pat,
                                 c.pdtqui as datae_pat,
                                 c.pdtlib as dtlan_pat,
-                                c.codbaixa as codigo_bai_pat,
+                                case
+                                    when c.codbaixa = 0 then null
+                                    else c.codbaixa
+                                end as codigo_bai_pat,
                                 cast(c.datbai as date) as dtpag_pat
                             from
                                 mat.mpt65000 c

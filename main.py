@@ -43,6 +43,7 @@ def main():
     # veiculos.cadastro()   
     # conexao.cur_sql.execute('USE smar_compras')
 
+##### PATRIMÔNIO #####
     # base.tipos_mov()
     # base.tipos_ajuste()
     # base.tipos_baixa()
@@ -50,8 +51,10 @@ def main():
     # base.tipos_situacao()
     # base.grupos()
     # base.unidade_subunidade()
-
-    cadastro.bens()
+    # cadastro.bens()
+    movimentacoes.aquisicao()
+    # movimentacoes.ajuste()
+    movimentacoes.baixas()
 
 if __name__ == '__main__':
     main()

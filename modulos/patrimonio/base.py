@@ -75,7 +75,7 @@ def tipos_bens():
         ORDER BY 1, 2, 3
     ''')
 
-    insert = cur_fdb.prep('insert into pt_cadtip (codigo_tip, empresa_tip, descricao_tip, id_idclspatrimonial, id_grpbens, id_cdclasse, id_ictipcadastro) values (?, ?, ?, ?, ?, ?, ?)')
+    insert = cur_fdb.prep('insert into pt_cadtip (codigo_tip, empresa_tip, descricao_tip, id_idclspatrimonial, id_grpbens, id_cdclasse, id_ictipcadastro, codigo_tce_tip) values (?, ?, ?, ?, ?, ?, ?, ?)')
     codigo_tip = 0
 
     for row in tqdm(consulta, desc="PATRIMÔNIO - Tipos de Bens"):
@@ -86,7 +86,8 @@ def tipos_bens():
         id_grpbens = row['grpbens']
         id_cdclasse = row['cdclasse']
         id_ictipcadastro = row['ictipcadastro']
-        valores = (codigo_tip, empresa_tip, descricao_tip, id_idclspatrimonial, id_grpbens, id_cdclasse, id_ictipcadastro)
+        codigo_tce_tip = CONTAS.get(row['idclspatrimonial'], None)
+        valores = (codigo_tip, empresa_tip, descricao_tip, id_idclspatrimonial, id_grpbens, id_cdclasse, id_ictipcadastro, codigo_tce_tip)
         cur_fdb.execute(insert, valores)
     commit()
 

@@ -210,3 +210,12 @@ def subunidades():
     for row in cur_fdb.fetchallmap():
         hash_map[row['pkant']] = row['codigo_set']
     return hash_map
+
+def plano_contas():
+    hash_map = {}
+
+    cur_fdb.execute('select titco, balco from centrocusto')
+
+    for row in cur_fdb.fetchallmap():
+        hash_map[row['titco']] = row['balco']
+    return hash_map
