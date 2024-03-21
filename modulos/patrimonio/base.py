@@ -92,41 +92,21 @@ def tipos_bens():
 
 def tipos_situacao():
     cur_fdb.execute('delete from pt_cadsit')   
+    print('PATRIMÔNIO - Inserindo Situações')
 
     cria_campo('alter table pt_cadsit add id_codsis varchar(20)')
     cria_campo('alter table pt_cadsit add id_codtab varchar(20)')
     cria_campo('alter table pt_cadsit add id_codite varchar(20)')   
 
-    consulta = fetchallmap('''
-        SELECT
-            a.codsis,
-            a.codtab,
-            a.codite,
-            a.descrc
-        FROM
-            mat.MXT60500 A
-        WHERE
-            a.codsis = '003'
-            AND a.codtab = '001'
-            AND A.CODITE <> '00'
-        ORDER BY
-            1,
-            2
-    ''')
+    valores = [
+        ("1", EMPRESA, "BAIXADO"),
+        ("2", EMPRESA, "INSERVÍVEL"),
+        ("3", EMPRESA, "TRANSFERIDO"),
+        ("4", EMPRESA, "NORMAL")]
 
-    insert = cur_fdb.prep("INSERT INTO PT_CADSIT (CODIGO_SIT, EMPRESA_SIT, DESCRICAO_SIT, ID_CODSIS, ID_CODTAB, ID_CODITE) VALUES (?, ?, ?, ?, ?, ?)")
-    i = 0
+    insert = cur_fdb.prep("INSERT INTO PT_CADSIT (CODIGO_SIT, EMPRESA_SIT, DESCRICAO_SIT) VALUES (?, ?, ?)")
 
-    for row in tqdm(consulta, desc="PATRIMÔNIO - Tipos de Situação"):
-        i += 1
-        codigo_sit = i
-        empresa_sit = EMPRESA
-        descricao_sit = row['descrc']
-        id_codsis = row['codsis']
-        id_codtab = row['codtab']
-        id_codite = row['codite']
-        valores = (codigo_sit, empresa_sit, descricao_sit, id_codsis, id_codtab, id_codite)
-        cur_fdb.execute(insert, valores)
+    cur_fdb.executemany(insert, valores)
     commit()
 
 def grupos():

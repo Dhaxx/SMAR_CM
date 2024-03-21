@@ -5,14 +5,24 @@ def bens():
 
     consulta = fetchallmap('''
                             select
-                                c.pchapa as codigo_pat,
+                                idPatMob as codigo_pat,
                                 right(c.pchapa,
                                 6) as chapa_pat,
-                                replace(c.despro , char(9), '') as discr_pat,
+                                substring(rtrim(replace(c.despro , char(9), '')),1,255) as discr_pat,
+                                obsgeral,
                                 1 as codigo_gru_pat,
-                                'i' as orig_pat,
+                                case
+                                    when idformaaquisicao = 3 then 'C'
+                                    when idformaaquisicao = 4 then 'D'
+                                    else 'O'
+                                end orig_pat,
                                 c.idclspatrimonial as codigo_tip_pat,
-                                c.icsitmovel as codigo_sit_pat,
+                                case
+                                    when c.icsitmovel = 'B' then 1
+                                    when c.icsitmovel = 'I' then 2
+                                    when c.icsitmovel = 'T' then 3
+                                    when c.icsitmovel = 'N' then 4
+                                end as codigo_sit_pat,
                                 c.idclspatrimonial as codigo_cpl_pat,
                                 coalesce (c.codfor,
                                 0) as codigo_for_pat,
@@ -20,7 +30,15 @@ def bens():
                                 cast(c.pvalaq as float) as valaqu_pat,
                                 cast(c.pvlmes as float) as valatu_pat,
                                 c.qtmesvidamovel as percenqtd_pat,
+                                case
+                                    when c.qtmesvidamovel <> 0 then 'V'
+                                    else Null
+                                end dae_pat,
                                 (cast(c.vlrresidual as float)) as valres_pat,
+                                case 
+                                    when c.qtmesvidamovel <> 0 then 'M'
+                                    else null
+                                end percentemp_pat,
                                 c.pdtqui as datae_pat,
                                 c.pdtlib as dtlan_pat,
                                 c.codbaixa as codigo_bai_pat,
@@ -35,12 +53,14 @@ def bens():
                                 c.pchapa
                             ''')
     
-    insert = cur_fdb.prep('''insert
+    insert = cur_fdb.prep('''
+                          insert
                                 into
                                 pt_cadpat (codigo_pat,
                                 empresa_pat,
                                 chapa_pat,
                                 discr_pat,
+                                obs_pat,
                                 codigo_gru_pat,
                                 orig_pat,
                                 codigo_tip_pat,
@@ -52,7 +72,9 @@ def bens():
                                 valaqu_pat,
                                 valatu_pat,
                                 percenqtd_pat,
+                                dae_pat,
                                 valres_pat,
+                                percentemp_pat,
                                 datae_pat,
                                 dtlan_pat,
                                 codigo_bai_pat,
@@ -60,7 +82,8 @@ def bens():
                             values(?,?,?,?,?,?,
                                    ?,?,?,?,?,?,
                                    ?,?,?,?,?,?,
-                                   ?,?);''')
+                                   ?,?,?,?,?);
+                          ''')
     
     for row in tqdm(consulta, desc='PATRIMONIO - Cadastro de Bens'):
         codigo_pat = row['codigo_pat']
@@ -74,14 +97,20 @@ def bens():
         codigo_tip_pat = row['codigo_tip_pat']
         codigo_sit_pat = row['codigo_sit_pat']
         discr_pat = row['discr_pat']
+        obs_pat = row['obsgeral']
         datae_pat = row['datae_pat']
         dtlan_pat = row['dtlan_pat']
         valaqu_pat = row['valaqu_pat']
         valatu_pat = row['valatu_pat']
         codigo_for_pat = row['codigo_for_pat']
         percenqtd_pat = row['percenqtd_pat']
+        dae_pat = row['dae_pat']
         valres_pat = row['valres_pat']
+        percentemp_pat = row['percentemp_pat']
         codigo_bai_pat = row['codigo_bai_pat']
         dtpag_pat = row['dtpag_pat']
-        cur_fdb.execute(insert,(codigo_pat, empresa_pat, chapa_pat, discr_pat, codigo_gru_pat, orig_pat, codigo_tip_pat, codigo_sit_pat, codigo_cpl_pat, codigo_for_pat, codigo_set_pat, codigo_set_atu_pat, valaqu_pat, valatu_pat, percenqtd_pat, valres_pat, datae_pat, dtlan_pat, codigo_bai_pat, dtpag_pat))
+        cur_fdb.execute(insert,(codigo_pat, empresa_pat, chapa_pat, discr_pat, obs_pat, codigo_gru_pat, orig_pat, 
+                                codigo_tip_pat, codigo_sit_pat, codigo_cpl_pat, codigo_for_pat, codigo_set_pat, 
+                                codigo_set_atu_pat, valaqu_pat, valatu_pat, percenqtd_pat, dae_pat, valres_pat, 
+                                percentemp_pat, datae_pat, dtlan_pat, codigo_bai_pat, dtpag_pat))
     commit()

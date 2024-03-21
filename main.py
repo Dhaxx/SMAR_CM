@@ -52,6 +52,6 @@ def main():
     # base.unidade_subunidade()
 
     cadastro.bens()
-    
+
 if __name__ == '__main__':
     main()
