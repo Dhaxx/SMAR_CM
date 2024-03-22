@@ -26,7 +26,7 @@ def main():
     compras.licitacao.cadpro() 
     compras.licitacao.regpreco() 
     compras.licitacao.aditamento()
-    compras.licitacao.cadpro_saldo_ant() # Ajustar as demais tabelas / Conferir os processos faltantes
+    compras.licitacao.cadpro_saldo_ant()
 
     compras.pedidos.cabecalho()
     compras.pedidos.itens()
