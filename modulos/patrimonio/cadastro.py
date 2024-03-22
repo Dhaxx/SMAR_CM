@@ -17,12 +17,7 @@ def bens():
                                     else 'O'
                                 end orig_pat,
                                 c.idclspatrimonial as codigo_tip_pat,
-                                case
-                                    when c.icsitmovel = 'B' then 1
-                                    when c.icsitmovel = 'I' then 2
-                                    when c.icsitmovel = 'T' then 3
-                                    when c.icsitmovel = 'N' then 4
-                                end as codigo_sit_pat,
+                                c.idestadocsv,
                                 c.idclspatrimonial as codigo_cpl_pat,
                                 coalesce (c.codfor,
                                 0) as codigo_for_pat,
@@ -45,7 +40,9 @@ def bens():
                                     when c.codbaixa = 0 then null
                                     else c.codbaixa
                                 end as codigo_bai_pat,
-                                cast(c.datbai as date) as dtpag_pat
+                                cast(c.datbai as date) as dtpag_pat,
+                                right('0000000000000' + pdocto,
+                                20) nota_pat
                             from
                                 mat.mpt65000 c
                             left join mat.mpt68600 d on
