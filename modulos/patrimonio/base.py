@@ -101,10 +101,10 @@ def tipos_situacao():
     cria_campo('alter table pt_cadsit add id_codite varchar(20)')   
 
     valores = [
-        ("1", EMPRESA, "BAIXADO"),
-        ("2", EMPRESA, "INSERVÍVEL"),
-        ("3", EMPRESA, "TRANSFERIDO"),
-        ("4", EMPRESA, "NORMAL")]
+        ("1", EMPRESA, "EXCELENTE"),
+        ("2", EMPRESA, "BOM"),
+        ("3", EMPRESA, "REGULAR"),
+        ("4", EMPRESA, "PÉSSIMO")]
 
     insert = cur_fdb.prep("INSERT INTO PT_CADSIT (CODIGO_SIT, EMPRESA_SIT, DESCRICAO_SIT) VALUES (?, ?, ?)")
 
