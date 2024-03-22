@@ -77,7 +77,7 @@ def ajuste():
                         P.CODIGO_SET_ATU_PAT,
                         P.VALAQU_PAT,
                         P.VALATU_PAT,
-                        (P.VALAQU_PAT - P.VALATU_PAT) AS AJUSTE,
+                        -(P.VALAQU_PAT - P.VALATU_PAT) AS AJUSTE,
                         P.BALCO_PAT
                     FROM
                         PT_CADPAT P
@@ -119,9 +119,6 @@ def ajuste():
         cur_fdb.execute(insert_movbem, (empresa_mov, codigo_mov, codigo_pat_mov, data_mov, tipo_mov, incorpora_mov, depreciacao_mov,
                                         codigo_set_mov, valor_mov, documento_mov, historico_mov))
     commit()
-
-def depreciacoes():
-    ...
 
 def baixas():
     cur_fdb.execute("delete from pt_movbem where tipo_mov = 'B'")
@@ -180,3 +177,59 @@ def baixas():
                     ''')
     commit()
 
+def depreciacoes():
+    cur_fdb.execute("delete from pt_movbem where depreciacao_mov = 'S'")
+
+    insert = cur_fdb.prep('''
+                            INSERT INTO
+                                pt_movbem (codigo_mov,
+                                empresa_mov,
+                                codigo_pat_mov,
+                                data_mov,
+                                tipo_mov,
+                                codigo_cpl_mov,
+                                codigo_set_mov,
+                                valor_mov,
+                                historico_mov,
+                                lote_mov,
+                                percentual_mov,
+                                depreciacao_mov)
+                            values (?,?,?,?,?,?,?,?,?,?,?,?)
+                         ''')
+    
+    consulta = fetchallmap('''
+                                select
+                                t808.IdPatrimonio,
+                                t808.dtcalculo,
+                                'R' tipo_mov,
+                                nivel1 + '.' + nivel2 + '.' + nivel3 + '.' + nivel4 + '.' + nivel5 codigo_set_mov,
+                                -vlrcotadep valor_mov,
+                                perctxdep percentual_mov,
+                                'S' depreciacao_mov,
+                                'DEPRECIAÇÃO - ' + CAST(t808.mes as varchar)+ '/' + cast(t808.ano as varchar) historico_mov
+                            from
+                                mat.MPT80800 t808
+                            left join mat.MXT71100 t711 on
+                                t808.idunidorc = t711.IdNivel5
+                            order by
+                                IdPatrimonio,
+                                t808.ano,
+                                t808.mes
+    ''')
+
+    codigo_mov = cur_fdb.execute('SELECT COALESCE(MAX(CODIGO_MOV), 0) FROM PT_MOVBEM').fetchone()[0]
+
+    for row in tqdm(consulta, desc='PATRIMÔNIO - DEPRECIAÇÕES'):
+        codigo_mov += 1
+        empresa_mov = EMPRESA
+        codigo_pat_mov = row['codigo_pat_mov']
+        data_mov = row['dtcalculo']
+        tipos_mov = row['tipo_mov']
+        codigo_cpl_mov = None
+        codigo_set_mov = 0
+        valor_mov = row['valor_mov']
+        historico_mov = row['historico_mov']
+        lote_mov = None
+        percentual_mov = row['percentual_mov']
+        depreciacao_mov = row['depreciacao_mov']
+    commit()

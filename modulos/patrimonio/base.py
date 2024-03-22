@@ -86,7 +86,8 @@ def tipos_bens():
         id_grpbens = row['grpbens']
         id_cdclasse = row['cdclasse']
         id_ictipcadastro = row['ictipcadastro']
-        codigo_tce_tip = CONTAS.get(row['idclspatrimonial'], None)
+        codigo_tce_tip = cur_fdb.execute(f"select balco from conpla_tce where titco containing '{row['dcclspatrimonial']}' and (balco starting '123' or balco starting '331')").fetchone()
+        codigo_tce_tip = codigo_tce_tip[0] if codigo_tce_tip else None
         valores = (codigo_tip, empresa_tip, descricao_tip, id_idclspatrimonial, id_grpbens, id_cdclasse, id_ictipcadastro, codigo_tce_tip)
         cur_fdb.execute(insert, valores)
     commit()
@@ -120,6 +121,7 @@ def grupos():
     commit()
         
 def unidade_subunidade():
+    cur_fdb.execute('delete from pt_cadpats')
     cur_fdb.execute('delete from pt_cadpatd')
     print('PATRIMÔNIO - Unidade/Subunidade')
     cria_campo('alter table pt_cadpatd add pkant varchar(20)')

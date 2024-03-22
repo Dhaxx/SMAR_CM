@@ -116,4 +116,5 @@ def bens():
                                 codigo_tip_pat, codigo_sit_pat, codigo_cpl_pat, codigo_for_pat, codigo_set_pat, 
                                 codigo_set_atu_pat, valaqu_pat, valatu_pat, percenqtd_pat, dae_pat, valres_pat, 
                                 percentemp_pat, datae_pat, dtlan_pat, codigo_bai_pat, dtpag_pat))
+    cur_fdb.execute('UPDATE pt_cadpat a SET a.CODIGO_CPL_PAT = (SELECT b.codigo_tce_tip FROM pt_cadtip b WHERE b.codigo_tip = a.CODIGO_TIP_PAT AND b.codigo_tce_tip IS NOT null)')
     commit()

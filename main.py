@@ -1,5 +1,5 @@
-from modulos.compras import *
-from modulos.frotas import *
+# from modulos.compras import *
+# from modulos.frotas import *
 from modulos.patrimonio import *
 from modulos import tools
 import conexao
@@ -44,16 +44,16 @@ def main():
     # conexao.cur_sql.execute('USE smar_compras')
 
 ##### PATRIMÔNIO #####
-    # base.tipos_mov()
-    # base.tipos_ajuste()
-    # base.tipos_baixa()
-    # base.tipos_bens()
-    # base.tipos_situacao()
-    # base.grupos()
-    # base.unidade_subunidade()
-    # cadastro.bens()
+    base.tipos_mov()
+    base.tipos_ajuste()
+    base.tipos_baixa()
+    base.tipos_bens()
+    base.tipos_situacao()
+    base.grupos()
+    base.unidade_subunidade()
+    cadastro.bens()
     movimentacoes.aquisicao()
-    # movimentacoes.ajuste()
+    movimentacoes.ajuste()
     movimentacoes.baixas()
 
 if __name__ == '__main__':

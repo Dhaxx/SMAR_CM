@@ -214,7 +214,7 @@ def subunidades():
 def plano_contas():
     hash_map = {}
 
-    cur_fdb.execute('select titco, balco from centrocusto')
+    cur_fdb.execute('select titco, balco from conpla_tce')
 
     for row in cur_fdb.fetchallmap():
         hash_map[row['titco']] = row['balco']
