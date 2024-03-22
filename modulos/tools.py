@@ -98,7 +98,7 @@ def cadastra_fornecedor_especifico(insmf, codfor):
     else:
         return verifica[0], verifica[1]
 
-def fornecedore_gerais():
+def fornecedores_gerais():
     consulta = fetchallmap('''select
                                     distinct *
                                 from

@@ -1,60 +1,61 @@
-# from modulos.compras import *
-# from modulos.frotas import *
-from modulos.patrimonio import *
-from modulos import tools
+from modulos import *
 import conexao
 
 def main():
-    # base.cadunimedida()
-    # base.grupo_e_subgrupo()
-    # base.cadest()
-    # base.almoxarifado()
-    # base.centro_custo()
+##### COMPRAS #####
+    from modulos import compras
+    compras.base.cadunimedida()
+    compras.base.grupo_e_subgrupo()
+    compras.base.cadest()
+    compras.base.almoxarifado()
+    compras.base.centro_custo()
 
-    # solicitacoes.cadastro()
-    # cotacoes.cadastro()
-    # cotacoes.fornecedores()
-    # cotacoes.valores()
+    compras.solicitacoes.cadastro()
+    compras.cotacoes.cadastro()
+    compras.cotacoes.fornecedores()
+    compras.cotacoes.valores()
 
-    # licitacao.cadlic()
-    # licitacao.cadprolic()
-    # tools.fornecedore_gerais()
-    # licitacao.prolic_prolics()
-    # licitacao.cadpro_proposta()
-    # licitacao.cadpro_lance() 
-    # licitacao.cadpro_final() 
-    # licitacao.cadpro_status() 
-    # licitacao.cadpro() 
-    # licitacao.regpreco() 
-    # licitacao.aditamento()
-    # licitacao.cadpro_saldo_ant() # Ajustar as demais tabelas / Conferir os processos faltantes
+    compras.licitacao.cadlic()
+    compras.licitacao.cadprolic()
+    tools.fornecedores_gerais()
+    compras.licitacao.prolic_prolics()
+    compras.licitacao.cadpro_proposta()
+    compras.licitacao.cadpro_lance() 
+    compras.licitacao.cadpro_final() 
+    compras.licitacao.cadpro_status() 
+    compras.licitacao.cadpro() 
+    compras.licitacao.regpreco() 
+    compras.licitacao.aditamento()
+    compras.licitacao.cadpro_saldo_ant() # Ajustar as demais tabelas / Conferir os processos faltantes
 
-    # pedidos.cabecalho()
-    # pedidos.itens()
-    
-    # estoque.almoxarif_para_ccusto()
-    # estoque.requi_saldo_ant()
-    # estoque.requi()
+    compras.pedidos.cabecalho()
+    compras.pedidos.itens()
 
-    # conexao.cur_sql.execute('USE SMARfrotas')
-    # motorista.cadastro()
-    # veiculos.modelo()
-    # veiculos.marca()
-    # veiculos.cadastro()   
-    # conexao.cur_sql.execute('USE smar_compras')
+##### ALMOXARIFADO #####   
+    compras.estoque.almoxarif_para_ccusto()
+    compras.estoque.requi_saldo_ant()
+    compras.estoque.requi()
+
+##### FROTAS #####
+    conexao.cur_sql.execute('USE SMARfrotas')
+    frotas.motorista.cadastro()
+    frotas.veiculos.modelo()
+    frotas.veiculos.marca()
+    frotas.veiculos.cadastro()   
+    conexao.cur_sql.execute('USE smar_compras')
 
 ##### PATRIMÔNIO #####
-    base.tipos_mov()
-    base.tipos_ajuste()
-    base.tipos_baixa()
-    base.tipos_bens()
-    base.tipos_situacao()
-    base.grupos()
-    base.unidade_subunidade()
-    cadastro.bens()
-    movimentacoes.aquisicao()
-    movimentacoes.ajuste()
-    movimentacoes.baixas()
+    patrimonio.base.tipos_mov()
+    patrimonio.base.tipos_ajuste()
+    patrimonio.base.tipos_baixa()
+    patrimonio.base.tipos_bens()
+    patrimonio.base.tipos_situacao()
+    patrimonio.base.grupos()
+    patrimonio.base.unidade_subunidade()
+    patrimonio.cadastro.bens()
+    patrimonio.movimentacoes.aquisicao()
+    patrimonio.movimentacoes.ajuste()
+    patrimonio.movimentacoes.baixas()
 
 if __name__ == '__main__':
     main()
