@@ -78,11 +78,12 @@ def bens():
                                 datae_pat,
                                 dtlan_pat,
                                 codigo_bai_pat,
-                                dtpag_pat)
+                                dtpag_pat,
+                                nota_pat)
                             values(?,?,?,?,?,?,
                                    ?,?,?,?,?,?,
                                    ?,?,?,?,?,?,
-                                   ?,?,?,?,?);
+                                   ?,?,?,?,?,?);
                           ''')
     
     for row in tqdm(consulta, desc='PATRIMONIO - Cadastro de Bens'):
@@ -109,9 +110,10 @@ def bens():
         percentemp_pat = row['percentemp_pat']
         codigo_bai_pat = row['codigo_bai_pat']
         dtpag_pat = row['dtpag_pat']
+        nota_pat = row['nota_pat']
         cur_fdb.execute(insert,(codigo_pat, empresa_pat, chapa_pat, discr_pat, obs_pat, codigo_gru_pat, orig_pat, 
                                 codigo_tip_pat, codigo_sit_pat, codigo_cpl_pat, codigo_for_pat, codigo_set_pat, 
                                 codigo_set_atu_pat, valaqu_pat, valatu_pat, percenqtd_pat, dae_pat, valres_pat, 
-                                percentemp_pat, datae_pat, dtlan_pat, codigo_bai_pat, dtpag_pat))
+                                percentemp_pat, datae_pat, dtlan_pat, codigo_bai_pat, dtpag_pat, nota_pat))
     cur_fdb.execute('UPDATE pt_cadpat a SET a.CODIGO_CPL_PAT = (SELECT b.codigo_tce_tip FROM pt_cadtip b WHERE b.codigo_tip = a.CODIGO_TIP_PAT AND b.codigo_tce_tip IS NOT null)')
     commit()
