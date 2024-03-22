@@ -111,7 +111,7 @@ def ajuste():
         data_mov = row['datae_pat']
         tipo_mov = 'R'
         incorpora_mov = 'N'
-        depreciacao_mov = 'N'
+        depreciacao_mov = 'S'
         codigo_set_mov = row['codigo_set_pat']
         valor_mov = row['ajuste']
         documento_mov = 'AJUSTE'
@@ -232,4 +232,6 @@ def depreciacoes():
         lote_mov = None
         percentual_mov = row['percentual_mov']
         depreciacao_mov = row['depreciacao_mov']
+
+        cur_fdb.execute(insert, (codigo_mov, empresa_mov, codigo_pat_mov, data_mov, tipos_mov, codigo_cpl_mov, codigo_set_mov, valor_mov, historico_mov, lote_mov, percentual_mov, depreciacao_mov))
     commit()
