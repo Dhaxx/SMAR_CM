@@ -40,7 +40,7 @@ def produtos():
 
     return hash_map
 
-def cotacoes():
+def lista_cotacoes():
     cur_fdb.execute("select numorc, ano, obs, registropreco from cadorc where obs starting 'Agrupamento'")
 
     hash_map = {}
@@ -99,6 +99,7 @@ def cadastra_fornecedor_especifico(insmf, codfor):
         return verifica[0], verifica[1]
 
 def fornecedores_gerais():
+    nome, insmf = fornecedores()
     consulta = fetchallmap('''select
                                     distinct *
                                 from
@@ -129,11 +130,13 @@ def fornecedores_gerais():
     codif = cur_fdb.execute('select max(codif) from desfor').fetchone()[0]
 
     for row in tqdm(consulta, desc='Inserindo Fornecedores Faltantes'):
-        verifica = cur_fdb.execute(f"select codif, nome, insmf from desfor where insmf containing '{row['insmf']}' or codif = '{row['codfor']}'").fetchone()
+        verifica = nome.get(row['codfor'], insmf.get(row['insmf'], None))
         if not verifica:    
             codif += 1
             cur_fdb.execute(insert, (codif, row['desnom'], row['insmf'], row['codfor']))
-            commit()
+            nome[row['codfor']] = row['desnom']
+            insmf[row['insmf']] = codif
+    commit()
 
 def ajustar_ccusto_cotacao():
     print('Ajustando Centro de custos da cotação...')

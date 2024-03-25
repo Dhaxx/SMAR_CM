@@ -32,8 +32,8 @@ def grupo_e_subgrupo():
     cria_campo("ALTER TABLE CADSUBGR ADD estrutura_ant varchar(2)")
     cria_campo("ALTER TABLE CADSUBGR ADD grupo_ant varchar(2)")
     cria_campo("ALTER TABLE CADSUBGR ADD subgrupo_ant varchar(2)")
-    cria_campo("DELETE FROM CADSUBGR")
-    cria_campo("DELETE FROM CADGRUPO")
+    cur_fdb.execute("DELETE FROM CADSUBGR")
+    cur_fdb.execute("DELETE FROM CADGRUPO")
 
     consulta = fetchallmap("""select
                             estrut + right('0' + grupo,
@@ -55,9 +55,7 @@ def grupo_e_subgrupo():
     for row in tqdm(consulta, desc='Inserindo Grupos e Subgrupos...'):
         if row['subgrupo'] == '000':
             cur_fdb.execute(insert_grupo, (row['grupo'], row['nome'], 'N', row['grupo_ant'], row['estrutura_ant']))
-        cur_fdb.execute(insert_subgrupo, (
-            row['grupo'], row['subgrupo'], row['nome'][:45], 'N', row['grupo_ant'], row['subgrupo_ant'],
-            row['estrutura_ant']))
+        cur_fdb.execute(insert_subgrupo, ( row['grupo'], row['subgrupo'], row['nome'][:45], 'N', row['grupo_ant'], row['subgrupo_ant'], row['estrutura_ant']))
     cur_fdb.execute(insert_grupo, ('112', 'Null', 'N', '12', '1'))
     commit()
 

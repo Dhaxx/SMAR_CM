@@ -333,10 +333,10 @@ def cadlic():
                   SELECT L.NUMLIC, CAST(1 AS INTEGER), L.DTREAL, L.HORREAL, L.COMP, L.DTENC, L.HORENC, CAST('T' AS VARCHAR(1)), CAST('O' AS VARCHAR(1)) FROM CADLIC L 
                   WHERE numlic not in (SELECT FIRST 1 S.NUMLIC FROM CADLIC_SESSAO S WHERE S.NUMLIC = L.NUMLIC)''')
     cur_fdb.execute('''UPDATE cadlic SET MASCMOD = SIGLA_ANT||'-'||NUMPRO||'/'||ANO''')
-    cur_fdb.execute('UPDATE CONTRATOS a SET a.PROCLIC = (SELECT b.proclic FROM cadlic b WHERE b.processo = a.proclic AND a.ano = b.ano)')
+    cur_fdb.execute('UPDATE CONTRATOS a SET a.PROCLIC = (SELECT b.proclic FROM cadlic b WHERE b.processo = a.proclic AND a.ano = b.ano and a.codif = b.codif)')
     commit()
 
-COTACAO = cotacoes()
+COTACAO = lista_cotacoes()
 
 def cadprolic():
     cur_fdb.execute('DELETE FROM CADPROLIC')
@@ -382,7 +382,7 @@ def cadprolic():
 
     i = 0
     
-    for row in tqdm(consulta.fetchallmap()):
+    for row in tqdm(consulta.fetchallmap(), desc='LICITAÇÃO - Inserindo itens...'):
         item = row['item']
         item_mask = row['item']
         numorc = row['numorc']
@@ -414,6 +414,7 @@ def prolic_prolics():
     i = 0
 
     global INSMF_FORNECEDOR
+    global NOME_FORNECEDOR
 
     consulta = fetchallmap(f"""select
                                     distinct *
@@ -430,7 +431,7 @@ def prolic_prolics():
                                         end status,
                                         'N' usa_preferencia,
                                         null nome_ant,
-                                        cast(convit as varchar) insmf
+                                        cast(codfor as varchar) insmf
                                     from
                                         mat.MCT70100
                                 union all
@@ -442,7 +443,7 @@ def prolic_prolics():
                                         'A' status,
                                         'N' usa_preferencia,
                                         null nome_ant,
-                                       cast(convit as varchar) insmf
+                                       cast(codfor as varchar) insmf
                                     from
                                         mat.mct90400
                                 union all
@@ -496,6 +497,7 @@ def prolic_prolics():
             codif = filtro[0]
             nome = filtro[1]
             INSMF_FORNECEDOR[row['insmf']] = codif
+            NOME_FORNECEDOR[codif] = nome
         status = row['status']
         usa_preferencia = row['usa_preferencia']
         codif_ant = row['codif']
@@ -880,7 +882,8 @@ def cadpro():
     print('Inserindo Cadpro...')
     cur_fdb.execute('delete from cadpro')
     
-    cur_fdb.execute(f"""INSERT INTO
+    cur_fdb.execute(f"""INSERT
+                            INTO
                             CADPRO(CODIF,
                             CADPRO,
                             QUAN1,
@@ -911,12 +914,12 @@ def cadpro():
                             QTDPED_FORNECEDOR_ANT,
                             VATOPED_FORNECEDOR_ANT,
                             marca)
-                        SELECT
+                                                SELECT
                             a.CODIF,
                             c.CADPRO,
-                            c.QUAN1,
+                            CASE WHEN VAUNL <> 0 THEN round((a.vatol / a.VAUNL), 2) ELSE 0 END qtdunit,
                             a.VAUNL,
-                            (c.QUAN1 * a.VAUNL) AS valortotal,
+                            CASE WHEN VAUNL <> 0 THEN round((a.vatol / a.VAUNL), 2) * a.VAUNL ELSE 0 END VATOTAL,
                             1,
                             'C',
                             c.ITEM,
@@ -929,10 +932,10 @@ def cadpro():
                             a.NUMLIC,
                             1,
                             b.ITEMP,
-                            c.QUAN1,
+                            CASE WHEN VAUNL <> 0 THEN round((a.vatol / a.VAUNL), 2) ELSE 0 END qtdunit_adit,
                             0,
                             a.VAUNL,
-                            (c.QUAN1 * a.VAUNL) AS valor_total_aditado,
+                            CASE WHEN VAUNL <> 0 THEN round((a.vatol / a.VAUNL), 2) * a.VAUNL ELSE 0 END VATOTAL,
                             0,
                             0,
                             c.ID_CADORC,
@@ -951,7 +954,8 @@ def cadpro():
                         INNER JOIN CADPROLIC_DETALHE c ON
                             c.NUMLIC = a.NUMLIC
                             AND b.ITEM = c.ITEM_CADPROLIC
-                                                INNER JOIN CADLIC D ON D.NUMLIC = A.NUMLIC
+                        INNER JOIN CADLIC D ON
+                            D.NUMLIC = A.NUMLIC
                         WHERE
                             a.SUBEM = 1
                             AND a.STATUS = 'F'""")
@@ -1022,7 +1026,7 @@ def vincula_cotacao_licitacao():
     
     update = cur_fdb.prep('Update cadorc set numlic = ?, proclic = ? where numorc = ?')
     
-    for row in tqdm(consulta, desc='Inserindo Itens...'):
+    for row in tqdm(consulta, desc='Vinculando licitações x cotações...'):
         numlic = LICITACAO[(int(row['convit']), row['sigla'], row['anoc'])] #, row['registropreco']
         try:
             numorc = COTACAO[(row['codgrupo'], row['anoc'], row['registropreco'])]
@@ -1128,3 +1132,20 @@ def cadpro_saldo_ant():
             commit()
         except:
             continue
+
+def fase_v():
+    consulta = fetchallmap(f"""
+                            SELECT 
+                                Licitacao,
+                                [Valor Estimado] valor,
+                                'S' enviou_tce,
+                                [Codigo Tribunal] codtce
+                            FROM 
+                                mat.ViewLicitacoesAUDESP vla
+                            where [Codigo Tribunal] <> ''
+                            """)
+    
+    for row in tqdm(consulta, desc='Inserindo Fase V...'):
+        processo = row['Licitacao'].split('-')
+        cur_fdb.execute(f"update cadlic set codtce = {row['codtce']}, valor = {row['valor']}  where processo = '{int(processo[0])}-{processo[2]}'")
+    commit()

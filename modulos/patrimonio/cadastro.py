@@ -17,7 +17,7 @@ def bens():
                                     else 'O'
                                 end orig_pat,
                                 c.idclspatrimonial as codigo_tip_pat,
-                                c.idestadocsv,
+                                c.idestadocsv codigo_sit_pat,
                                 c.idclspatrimonial as codigo_cpl_pat,
                                 coalesce (c.codfor,
                                 0) as codigo_for_pat,

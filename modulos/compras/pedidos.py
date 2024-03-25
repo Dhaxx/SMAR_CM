@@ -11,13 +11,14 @@ def cabecalho():
     cria_campo('ALTER TABLE cadped ADD nafano_ant varchar(10)')
     cria_campo('ALTER TABLE cadped ADD codgrupo_ant varchar(10)')
     cria_campo('ALTER TABLE cadped ADD anogrupo_ant varchar(10)')
+    cria_campo('ALTER TABLE cadped ADD numint_ant varchar(10)')
 
     cur_fdb.execute('delete from icadped')
     cur_fdb.execute('delete from cadped')
 
     insert = cur_fdb.prep("""insert into cadped (numped, num, ano, datped, codif, total, entrou, codccusto, id_cadped, 
-                                                 empresa, numlic, af_ant, nafano_ant, codgrupo_ant, anogrupo_ant)
-                         values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""")
+                                                 empresa, numlic, af_ant, nafano_ant, codgrupo_ant, anogrupo_ant, numint_ant)
+                         values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""")
     
     consulta = fetchallmap(f"""select
                                     RIGHT('00000' + cast(b.numint AS varchar),
@@ -37,7 +38,8 @@ def cabecalho():
                                     a.af af_ant,
                                     a.nafano nafano_ant,
                                     a.codgrupo codgrupo_ant,
-                                    a.anogrupo anogrupo_ant
+                                    a.anogrupo anogrupo_ant,
+                                    a.numint numint_ant 
                                 from
                                     mat.MCT67000 a
                                 join mat.MCT66800 b on
@@ -64,7 +66,9 @@ def cabecalho():
         codgrupo_ant = row['codgrupo_ant']
         anogrupo_ant = row['anogrupo_ant']
         numlic = LICITACAO[(row['convit'],row['sigla'],row['anoc'])]
-        cur_fdb.execute(insert,(numped, num, ano, datped, codif, total, entrou, codccusto, id_cadped, empresa, numlic, af_ant, nafano_ant, codgrupo_ant, anogrupo_ant))
+        numint_ant = row['numint_ant']
+        cur_fdb.execute(insert,(numped, num, ano, datped, codif, total, entrou, codccusto, id_cadped, 
+                                empresa, numlic, af_ant, nafano_ant, codgrupo_ant, anogrupo_ant, numint_ant))
     commit()
 
 def itens():

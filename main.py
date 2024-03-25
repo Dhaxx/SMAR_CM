@@ -3,21 +3,20 @@ import conexao
 
 def main():
 ##### COMPRAS #####
-    from modulos import compras
-    compras.base.cadunimedida()
-    compras.base.grupo_e_subgrupo()
-    compras.base.cadest()
-    compras.base.almoxarifado()
-    compras.base.centro_custo()
+    # compras.base.cadunimedida()
+    # compras.base.grupo_e_subgrupo()
+    # compras.base.cadest()
+    # compras.base.almoxarifado()
+    # compras.base.centro_custo()
 
-    compras.solicitacoes.cadastro()
-    compras.cotacoes.cadastro()
-    compras.cotacoes.fornecedores()
-    compras.cotacoes.valores()
+    # compras.solicitacoes.cadastro()
+    # compras.cotacoes.cadastro()
+    # compras.cotacoes.fornecedores()
+    # compras.cotacoes.valores()
 
-    compras.licitacao.cadlic()
-    compras.licitacao.cadprolic()
-    tools.fornecedores_gerais()
+    # compras.licitacao.cadlic()
+    # compras.licitacao.cadprolic()
+    # tools.fornecedores_gerais()
     compras.licitacao.prolic_prolics()
     compras.licitacao.cadpro_proposta()
     compras.licitacao.cadpro_lance() 
@@ -27,6 +26,7 @@ def main():
     compras.licitacao.regpreco() 
     compras.licitacao.aditamento()
     compras.licitacao.cadpro_saldo_ant()
+    compras.licitacao.fase_v()
 
     compras.pedidos.cabecalho()
     compras.pedidos.itens()

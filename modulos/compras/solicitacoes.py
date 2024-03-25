@@ -6,8 +6,6 @@ PRODUTOS = {}
 
 
 def cadastro():
-    print("Inserindo Solicitações...")
-
     global PRODUTOS
     # Ao executar o codigo inteiro da main sem nenhum comentario das funcoes, é necessario re-popular o dict
     if len(PRODUTOS) == 0:
@@ -137,7 +135,7 @@ def cadastro():
     numero = 0
     numorc = ""
     ano_atual = 0
-    for row in tqdm(consulta):
+    for row in tqdm(consulta, desc='Inserindo Solicitações...'):
 
         chave_cursor = str(row['numero']) + '/' + str(row['ano']) + '-' + row['registropreco']
 
