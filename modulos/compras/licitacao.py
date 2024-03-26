@@ -345,7 +345,7 @@ def cadprolic():
     cur_fdb.execute('UPDATE ICADORC a SET a.numlic = (SELECT b.numlic FROM cadorc b WHERE a.NUMORC=b.numorc AND b.numlic IS NOT null)')
     commit()
 
-    consulta = cur_fdb.execute("""SELECT
+    consulta = cur_fdb.execute("""SELECT distinct
                             item,
                             item,
                             numorc,
@@ -989,6 +989,9 @@ def regpreco():
     commit()
 
 def vincula_cotacao_licitacao():
+    cur_fdb.execute('update icadorc set numlic = null')
+    commit()
+
     consulta = fetchallmap(f"""
                             select
                                 anogrupo,
