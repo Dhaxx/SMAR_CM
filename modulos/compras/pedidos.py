@@ -20,7 +20,7 @@ def cabecalho():
                                                  empresa, numlic, af_ant, nafano_ant, codgrupo_ant, anogrupo_ant, numint_ant)
                          values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""")
     
-    consulta = fetchallmap(f"""select
+    consulta = fetchallmap(f"""select distinct
                                     RIGHT('00000' + cast(b.numint AS varchar),
                                     5)+ '/' + SUBSTRING(b.anoint, 3, 2) numped,
                                     RIGHT('00000' + cast(b.numint as varchar),

@@ -1,3 +1,4 @@
+# -*- coding: latin1 -*-
 from modulos import *
 import conexao
 
@@ -15,23 +16,23 @@ def main():
     # compras.cotacoes.valores()
 
     # compras.licitacao.cadlic()
-    # compras.licitacao.cadprolic()
-    # tools.fornecedores_gerais()
-    # compras.licitacao.prolic_prolics()
-    # compras.licitacao.cadpro_proposta()
-    # compras.licitacao.cadpro_lance() 
-    # compras.licitacao.cadpro_final() 
-    # compras.licitacao.cadpro_status() 
-    # compras.licitacao.cadpro() 
-    # compras.licitacao.regpreco() 
-    # compras.licitacao.aditamento()
-    # compras.licitacao.cadpro_saldo_ant()
+    compras.licitacao.cadprolic()
+    tools.fornecedores_gerais()
+    compras.licitacao.prolic_prolics()
+    compras.licitacao.cadpro_proposta()
+    compras.licitacao.cadpro_lance() 
+    compras.licitacao.cadpro_final() 
+    compras.licitacao.cadpro_status() 
+    compras.licitacao.cadpro() 
+    compras.licitacao.regpreco() 
+    compras.licitacao.aditamento()
+    compras.licitacao.cadpro_saldo_ant()
     compras.licitacao.fase_v()
 
-#     compras.pedidos.cabecalho()
-#     compras.pedidos.itens()
+    # compras.pedidos.cabecalho()
+    # compras.pedidos.itens()
 
-# ##### ALMOXARIFADO #####   
+##### ALMOXARIFADO #####   
 #     compras.estoque.almoxarif_para_ccusto()
 #     compras.estoque.requi_saldo_ant()
 #     compras.estoque.requi()

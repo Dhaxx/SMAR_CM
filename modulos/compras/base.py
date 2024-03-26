@@ -56,7 +56,8 @@ def grupo_e_subgrupo():
         if row['subgrupo'] == '000':
             cur_fdb.execute(insert_grupo, (row['grupo'], row['nome'], 'N', row['grupo_ant'], row['estrutura_ant']))
         cur_fdb.execute(insert_subgrupo, ( row['grupo'], row['subgrupo'], row['nome'][:45], 'N', row['grupo_ant'], row['subgrupo_ant'], row['estrutura_ant']))
-    cur_fdb.execute(insert_grupo, ('112', 'Null', 'N', '12', '1'))
+    cur_fdb.execute(insert_grupo, ('901', 'CONVERSÃO', 'N', '01', '9'))
+    cur_fdb.execute(insert_subgrupo, ('901', '003', 'CONVERSÃO', 'N', '01', '03', '9'))
     commit()
 
 
