@@ -1147,5 +1147,6 @@ def fase_v():
     
     for row in tqdm(consulta, desc='Inserindo Fase V...'):
         processo = row['Licitacao'].split('-')
-        cur_fdb.execute(f"update cadlic set codtce = {row['codtce']}, valor = {row['valor']}  where processo = '{int(processo[0])}-{processo[2]}'")
+        mascmod = (f"{processo[0]}-{processo[-1]}").replace(' ','')
+        cur_fdb.execute(f"update cadlic set codtce = {row['codtce']}, enviotce = 'S', valor = {row['valor']}  where mascmod = '{mascmod}'")
     commit()
