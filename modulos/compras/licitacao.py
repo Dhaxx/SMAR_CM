@@ -170,7 +170,7 @@ def cadlic():
                                         CriterioJulgamento criterio_ant,
                                         c676.sigla sigla_ant,
                                         status status_ant,
-                                        substring(rtrim(cpcpro), 1, 9) processo
+                                        SUBSTRING(RTRIM(cpcpro), PATINDEX('%[^0]%', RTRIM(cpcpro) + '.'), LEN(cpcpro)) AS processo
                                     FROM
                                         MAT.MCT67600 c676
                                     left join mat.MCT80600 c806 on
@@ -272,7 +272,7 @@ def cadlic():
                                         CriterioAceitabilidade criterio_ant,
                                         c914.sigla sigla_ant,
                                         status status_ant,
-                                        substring(rtrim(cpcpro), 1, 9) processo
+                                        SUBSTRING(RTRIM(cpcpro), PATINDEX('%[^0]%', RTRIM(cpcpro) + '.'), LEN(cpcpro)) AS processo
                                     FROM
                                         mat.MCT91400 c914
                                     left join mat.MCT90300 c903 on
