@@ -90,52 +90,22 @@ def cadlic():
                                             WHEN CriterioJulgamento IN ('Taxa Administrativa') THEN 'Menor Acrescimo'
                                         END discr7,
                                         CASE
-                                            WHEN c676.sigla IN (00) THEN 'DI01'
-                                            --MODALIDADES DE LICITAÇÃO
-                                            WHEN c676.sigla IN (01) THEN 'CS01'
-                                            --CONCURSO
-                                            WHEN c676.sigla IN (02) THEN 'CCO2'
-                                            --siglae
-                                            WHEN c676.sigla IN (03) THEN 'TOM3'
-                                            --TOMADA 
-                                            WHEN c676.sigla IN (04) THEN 'CON4'
-                                            --CONCORRENCIA
-                                            WHEN c676.sigla IN (05) THEN 'DI01'
+                                            when c676.sigla IN (01, 02, 03, 22) THEN 'DI01'
                                             --DISPENSA
-                                            WHEN c676.sigla IN (06) THEN 'IN01'
+                                            when c676.sigla IN (10, 11, 12) THEN 'CS01'
+                                            --CONCURSO
+                                            when c676.sigla IN (07, 08, 09) THEN 'TOM3'
+                                            --TOMADA 
+                                            when c676.sigla IN (04, 05, 06) THEN 'IN01'
                                             --INEXIGIBILIDADE
-                                            WHEN c676.sigla IN (07) THEN 'PP01'
+                                            when c676.sigla IN (16, 17, 18) THEN 'PP01'
                                             --Pregão Presencial
-                                            WHEN c676.sigla IN (08) THEN 'PE01'
-                                            --BEC - BOLSA ELETRONICA                            
-                                            WHEN c676.sigla IN (09) THEN 'DI01'
-                                            --OUTROS
-                                            WHEN c676.sigla IN (10) THEN 'CCO5'
-                                            --siglaE (Obras)
-                                            WHEN c676.sigla IN (11) THEN 'DI01'
-                                            --DISPENSA DE LICITAÇÃO - INCISO I                  
-                                            WHEN c676.sigla IN (12) THEN 'DI01'
-                                            --DISPENSA DE LICITAÇÃO - DEMAIS INCISOS            
-                                            WHEN c676.sigla IN (13) THEN 'TOM6'
-                                            --TOMADA DE PREÇOS (OBRAS E SERVIÇOS DE ENGENHARIA) 
-                                            WHEN c676.sigla IN (14) THEN 'CON7'
+                                            when c676.sigla IN (19, 20, 21) THEN 'CON7'
                                             --CONCORRÊNCIA (OBRAS E SERVIÇOS DE ENGENHARIA)      
-                                            WHEN c676.sigla IN (15) THEN 'DI01'
-                                            --DISP
-                                            WHEN c676.sigla IN (16) THEN 'DI01'
-                                            --CHAMADA PUB
-                                            WHEN c676.sigla IN (17) THEN 'DI01'
-                                            --DISPENSA DE LICITAÇÃO - LEI Nº 14.133/2021     
-                                            WHEN c676.sigla IN (18) THEN 'IN01'
-                                            --INEXIGIBILIDADE - LEI Nº 14.133/2021    
-                                            WHEN c676.sigla IN (19) THEN 'PE01'
+                                            when c676.sigla IN (13, 14, 15) THEN 'PE01'
                                             --Pregão - Eletrônico                                         
-                                            WHEN c676.sigla IN (20) THEN 'CON4'
-                                            --CONCORRÊNCIA ELETRÔNICA
-                                            WHEN c676.sigla IN (21) THEN 'LEIL'
+                                            when c676.sigla IN (23, 24) THEN 'LEIL'
                                             --LEILÃO
-                                            WHEN c676.sigla IN (22) THEN 'DI01'
-                                            --Pregão Presencial
                                         END modlic,
                                         dtPublicacaoHomologacao dthom,
                                         dataadjudicacao dtadj,
@@ -152,7 +122,7 @@ def cadlic():
                                         'N' registropreco,
                                         'U' ctlance,
                                         CASE
-                                            WHEN c676.sigla IN (10, 13, 14) THEN 'S'
+                                            when c676.sigla IN (10, 13, 14) THEN 'S'
                                             ELSE 'N'
                                         END obra,
                                         idagenda numlic,
@@ -192,52 +162,22 @@ def cadlic():
                                         nota2) detalhe,
                                         'Menor Preço Unitário' discr7,
                                         CASE
-                                            WHEN c914.sigla IN (00) THEN 'DI01'
-                                            --MODALIDADES DE LICITAÇÃO
-                                            WHEN c914.sigla IN (01) THEN 'CS01'
-                                            --CONCURSO
-                                            WHEN c914.sigla IN (02) THEN 'CCO2'
-                                            --siglae
-                                            WHEN c914.sigla IN (03) THEN 'TOM3'
-                                            --TOMADA 
-                                            WHEN c914.sigla IN (04) THEN 'CON4'
-                                            --CONCORRENCIA
-                                            WHEN c914.sigla IN (05) THEN 'DI01'
+                                            when c914.sigla IN (01, 02, 03, 22) THEN 'DI01'
                                             --DISPENSA
-                                            WHEN c914.sigla IN (06) THEN 'IN01'
+                                            when c914.sigla IN (10, 11, 12) THEN 'CS01'
+                                            --CONCURSO
+                                            when c914.sigla IN (07, 08, 09) THEN 'TOM3'
+                                            --TOMADA 
+                                            when c914.sigla IN (04, 05, 06) THEN 'IN01'
                                             --INEXIGIBILIDADE
-                                            WHEN c914.sigla IN (07) THEN 'PP01'
+                                            when c914.sigla IN (16, 17, 18) THEN 'PP01'
                                             --Pregão Presencial
-                                            WHEN c914.sigla IN (08) THEN 'PE01'
-                                            --BEC - BOLSA ELETRONICA                            
-                                            WHEN c914.sigla IN (09) THEN 'DI01'
-                                            --OUTROS
-                                            WHEN c914.sigla IN (10) THEN 'CCO5'
-                                            --siglaE (Obras)
-                                            WHEN c914.sigla IN (11) THEN 'DI01'
-                                            --DISPENSA DE LICITAÇÃO - INCISO I                  
-                                            WHEN c914.sigla IN (12) THEN 'DI01'
-                                            --DISPENSA DE LICITAÇÃO - DEMAIS INCISOS            
-                                            WHEN c914.sigla IN (13) THEN 'TOM6'
-                                            --TOMADA DE PREÇOS (OBRAS E SERVIÇOS DE ENGENHARIA) 
-                                            WHEN c914.sigla IN (14) THEN 'CON7'
+                                            when c914.sigla IN (19, 20, 21) THEN 'CON7'
                                             --CONCORRÊNCIA (OBRAS E SERVIÇOS DE ENGENHARIA)      
-                                            WHEN c914.sigla IN (15) THEN 'DI01'
-                                            --DISP
-                                            WHEN c914.sigla IN (16) THEN 'DI01'
-                                            --CHAMADA PUB
-                                            WHEN c914.sigla IN (17) THEN 'DI01'
-                                            --DISPENSA DE LICITAÇÃO - LEI Nº 14.133/2021     
-                                            WHEN c914.sigla IN (18) THEN 'IN01'
-                                            --INEXIGIBILIDADE - LEI Nº 14.133/2021    
-                                            WHEN c914.sigla IN (19) THEN 'PE01'
+                                            when c914.sigla IN (13, 14, 15) THEN 'PE01'
                                             --Pregão - Eletrônico                                         
-                                            WHEN c914.sigla IN (20) THEN 'CON4'
-                                            --CONCORRÊNCIA ELETRÔNICA
-                                            WHEN c914.sigla IN (21) THEN 'LEIL'
+                                            when c914.sigla IN (23, 24) THEN 'LEIL'
                                             --LEILÃO
-                                            WHEN c914.sigla IN (22) THEN 'DI01'
-                                            --Pregão Presencial
                                         END modlic,
                                         dtPublicacaoHomologacao dthom,
                                         dataadjudicacao dtadj,
@@ -281,7 +221,7 @@ def cadlic():
                                         and c903.sigla = c914.sigla
                                     where
                                         c914.anoc >= {ANO-5}
-                                                                ) AS subconsulta
+                                                                                                ) AS subconsulta
                                 ORDER BY
                                     proclic,
                                     ANO;""")
@@ -336,32 +276,316 @@ def cadlic():
     cur_fdb.execute('UPDATE CONTRATOS a SET a.PROCLIC = (SELECT b.proclic FROM cadlic b WHERE b.processo = a.proclic AND a.ano = b.ano and a.codif = b.codif)')
     commit()
 
-COTACAO = lista_cotacoes()
+LICITACAO = licitacoes()
+PRODUTOS = produtos()
 
 def cadprolic():
     cur_fdb.execute('DELETE FROM CADPROLIC')
-    cria_campo('ALTER TABLE ICADORC ADD numlic varchar(10)')
-    vincula_cotacao_licitacao()
-    cur_fdb.execute('UPDATE ICADORC a SET a.numlic = (SELECT b.numlic FROM cadorc b WHERE a.NUMORC=b.numorc AND b.numlic IS NOT null)')
     commit()
+    CENTROCUSTOS = depara_ccusto()
 
-    consulta = cur_fdb.execute("""SELECT distinct
-                            item,
-                            item,
-                            numorc,
-                            cadpro,
-                            qtd,
-                            valor,
-                            qtd * valor total,
-                            CODCCUSTO,
-                            'N' reduz,
-                            numlic,
-                            'N' microempresa,
-                            '$' tlance,
-                            ITEMORC_AG,
-                            ID_CADORC
-                        FROM
-                            iCADORC c where numlic is not null""")
+    consulta = fetchallmap(f"""select
+	itemp,
+	Null numorc,
+	cadpro,
+	quan1 quan1,
+	vaun1 vamed1,
+	vato1 vatomed1,
+	'001.001.000.000.000' codccusto,
+	'N' reduz,
+	'N' microempresa,
+	'$' tlance,
+	Null id_cadorc,
+	cast(numpro as integer) numpro,
+	sigla_ant,
+	ano
+from
+	(
+	select
+		1 sessao,
+		codfor codif,
+		--ROW_NUMBER() over (partition by isnull(codfor,insmf), convit order by nuitem) item,
+		nuitem itemp,
+		[cadpro],
+		coalesce(qtde,
+		0) quan1,
+		coalesce(preco,
+		0) vaun1,
+		coalesce(total,
+		0) vato1,
+		case
+			when venc is null then 'D'
+			else 'C'
+		end as status,
+		venc subem,
+		rtrim(marca) marca,
+		rtrim(isnull(insmf, codfor)) insmf,
+		right('00000000' + cast(nrolote as varchar),
+		8) lotelic,
+		sigla sigla_ant,
+		convit numpro,
+		anoc ano,
+		'N' registropreco
+	from
+		(
+		SELECT
+			c697.IdProcCompra,
+			c697.unges,
+			c697.sigla,
+			c697.convit,
+			c697.anoc,
+			c698.estrut + '.' + c698.grupo + '.' + c698.subgrp + '.' + c698.itemat + '-' + c698.digmat cadpro,
+			c803.idlote,
+			nrolote = CASE
+				WHEN c803.idLote IS NULL THEN c698.nuitem
+				ELSE c934.NroLote
+			END,
+			descricao = CASE
+				WHEN c803.idLote IS NULL THEN 'Lote ' + RTRIM(c698.nuitem)
+				ELSE c934.Descricao
+			END,
+			estrut = CASE
+				WHEN c812.estrut_atu IS NULL THEN c698.estrut
+				ELSE c812.estrut_atu
+			END,
+			grupo = CASE
+				WHEN c812.grupo_atu IS NULL THEN c698.grupo
+				ELSE c812.grupo_atu
+			END,
+			subgrp = CASE
+				WHEN c812.subgrp_atu IS NULL THEN c698.subgrp
+				ELSE c812.subgrp_atu
+			END,
+			itemat = CASE
+				WHEN c812.itemat_atu IS NULL THEN c698.itemat
+				ELSE c812.itemat_atu
+			END,
+			digmat = CASE
+				WHEN c812.digmat_atu IS NULL THEN c698.digmat
+				ELSE c812.digmat_atu
+			END,
+			codfor = c698.codfor,
+			c698.codfor_representante,
+			c698.venc,
+			c698.empate,
+			c698.preco,
+			c698.marca,
+			c698.valid,
+			c698.prazo,
+			c698.pgto,
+			c698.nuitem,
+			c698.garantia,
+			qtde = SUM(C803.quantid),
+			total = SUM(ROUND(C803.quantid * c698.preco, 2)),
+			insmf = c072.nrcpfcnpj
+		FROM
+			mat.MCT69700 c697
+		INNER JOIN mat.MCT69800 c698 ON
+			c698.IdProcCompra = c697.IdProcCompra
+		INNER JOIN mat.MCT80200 c802 ON
+			C802.convit = c697.convit
+			AND C802.sigla = c697.sigla
+			AND C802.anoc = c697.anoc
+			AND C802.unges = c697.unges
+			AND c802.aditivo = 0
+		INNER JOIN mat.MCT80300 c803 ON
+			C803.codgrupo = C802.codgrupo
+			AND C803.anogrupo = C802.anogrupo
+			AND C803.unges = C802.unges
+			AND C803.estrut = c698.estrut
+			AND C803.grupo = c698.grupo
+			AND C803.subgrp = c698.subgrp
+			AND C803.itemat = c698.itemat
+			AND C803.digmat = c698.digmat
+			AND ISNULL(c803.idLote,
+			0) = ISNULL(c698.idLote,
+			0)
+		LEFT JOIN mat.MCT81200 c812 ON
+			c812.unges = c697.unges
+			AND c812.sigla = c697.sigla
+			AND c812.anoc = c697.anoc
+			AND c812.convit = c697.convit
+			AND c812.codfor = c698.codfor
+			AND c812.estrut_ant = c698.estrut
+			AND c812.grupo_ant = c698.grupo
+			AND c812.subgrp_ant = c698.subgrp
+			AND c812.itemat_ant = c698.itemat
+			AND c812.digmat_ant = c698.digmat
+		LEFT JOIN mat.MCT93400 c934 ON
+			c934.IdLote = c803.idLote
+		LEFT JOIN mat.MCT07200 c072 ON
+			c072.idfornecedor = c698.idMCT072
+		where
+			c697.anoc >= 2023
+		GROUP BY
+			c697.IdProcCompra,
+			c697.unges,
+			c697.sigla,
+			c697.convit,
+			c697.anoc,
+			c812.estrut_atu,
+			c812.grupo_atu,
+			c812.subgrp_atu,
+			c812.itemat_atu,
+			c812.digmat_atu,
+			c698.estrut,
+			c698.grupo,
+			c698.subgrp,
+			c698.itemat,
+			c698.digmat,
+			c698.codfor,
+			c698.venc,
+			c698.empate,
+			c698.preco,
+			c698.marca,
+			c698.valid,
+			c698.prazo,
+			c698.pgto,
+			c698.nuitem,
+			c698.garantia,
+			c803.idlote,
+			c934.nrolote,
+			c934.descricao,
+			c698.codfor_representante,
+			c072.nrcpfcnpj) as query
+Union all
+	select
+		1 sessao,
+		codfor codif,
+		--ROW_NUMBER() over (partition by codfor, convit order by nuitem)itemp,
+		nuitem,
+		[cadpro],
+		coalesce(qtde,
+		0) quan1,
+		coalesce(preco,
+		0) vaun1,
+		coalesce(total,
+		0) vato1,
+		case
+			when isnull(class,
+			venc) is null then 'D'
+			else 'C'
+		end as status,
+		venc subem,
+		rtrim(marca) marca,
+		rtrim(isnull(insmf, codfor)) insmf,
+		right('00000000' + cast(nrolote as varchar),
+		8) lotelic,
+		sigla sigla_ant,
+		convit numpro,
+		anoc ano,
+		'S' registropreco
+	from
+		(
+		SELECT
+			c905.unges,
+			c905.sigla,
+			c905.convit,
+			c905.anoc,
+			c905.estrut + '.' + c905.grupo + '.' + c905.subgrp + '.' + c905.itemat + '-' + c905.digmat cadpro,
+			c913.idLote,
+			nrolote = CASE
+				WHEN c913.idLote IS NULL THEN c905.nuitem
+				ELSE c934.NroLote
+			END,
+			descricao = CASE
+				WHEN c913.idLote IS NULL THEN 'Lote ' + RTRIM(c905.nuitem)
+				ELSE c934.Descricao
+			END,
+			estrut = CASE
+				WHEN c812.estrut_atu IS NULL THEN c905.estrut
+				ELSE c812.estrut_atu
+			END,
+			grupo = CASE
+				WHEN c812.grupo_atu IS NULL THEN c905.grupo
+				ELSE c812.grupo_atu
+			END,
+			subgrp = CASE
+				WHEN c812.subgrp_atu IS NULL THEN c905.subgrp
+				ELSE c812.subgrp_atu
+			END,
+			itemat = CASE
+				WHEN c812.itemat_atu IS NULL THEN c905.itemat
+				ELSE c812.itemat_atu
+			END,
+			digmat = CASE
+				WHEN c812.digmat_atu IS NULL THEN c905.digmat
+				ELSE c812.digmat_atu
+			END,
+			c905.codfor,
+			c905.venc,
+			c905.class,
+			preco = c905.pr_unit,
+			c905.marca,
+			c905.modelo,
+			c905.nuitem,
+			qtde = SUM(c913.quantid),
+			total = SUM(ROUND(c905.qtde * c905.pr_unit, 2)),
+			insmf = c072.nrcpfcnpj
+		FROM
+			mat.MCT90500 c905
+		INNER JOIN mat.MCT91200 c912 ON
+			c912.unges = c905.unges
+			AND c912.sigla = c905.sigla
+			AND c912.convit = c905.convit
+			AND c912.anoc = c905.anoc
+		INNER JOIN mat.MCT91300 c913 ON
+			c913.unges = c912.unges
+			AND c913.codgrupo = c912.codgrupo
+			AND c913.anogrupo = c912.anogrupo
+			AND c913.estrut = c905.estrut
+			AND c913.grupo = c905.grupo
+			AND c913.subgrp = c905.subgrp
+			AND c913.itemat = c905.itemat
+			AND c913.digmat = c905.digmat
+			AND ISNULL(c913.idLote,
+			0) = ISNULL(c905.idLote,
+			0)
+		LEFT JOIN mat.MCT81200 c812 ON
+			c812.unges = c905.unges
+				AND c812.sigla = c905.sigla
+				AND c812.anoc = c905.anoc
+				AND c812.convit = c905.convit
+				AND c812.codfor = c905.codfor
+				AND c812.estrut_ant = c905.estrut
+				AND c812.grupo_ant = c905.grupo
+				AND c812.subgrp_ant = c905.subgrp
+				AND c812.itemat_ant = c905.itemat
+				AND c812.digmat_ant = c905.digmat
+			LEFT JOIN mat.MCT93400 c934 ON
+				c934.IdLote = c913.idLote
+			LEFT JOIN mat.MCT07200 c072 ON
+				c072.idfornecedor = c905.idMCT072
+			where
+				c905.anoc >= 2023
+			GROUP BY
+				c905.unges,
+				c905.sigla,
+				c905.convit,
+				c905.anoc,
+				c913.idLote,
+				c812.estrut_atu,
+				c812.grupo_atu,
+				c812.subgrp_atu,
+				c812.itemat_atu,
+				c812.digmat_atu,
+				c905.estrut,
+				c905.grupo,
+				c905.subgrp,
+				c905.itemat,
+				c905.digmat,
+				c905.pr_unit,
+				c913.idLote,
+				c905.codfor,
+				c905.venc,
+				c905.class,
+				c905.nuitem,
+				c905.marca,
+				c905.modelo,
+				c934.nrolote,
+				c934.descricao,
+				c072.nrcpfcnpj) as query) as rn
+				where subem = 1""")
     
     insert = cur_fdb.prep("""INSERT
                             INTO
@@ -382,29 +606,32 @@ def cadprolic():
 
     i = 0
     
-    for row in tqdm(consulta.fetchallmap(), desc='LICITAÇÃO - Inserindo itens...'):
-        item = row['item']
-        item_mask = row['item']
+    for row in tqdm(consulta, desc='LICITAÇÃO - Inserindo itens...'):
+        item = row['itemp']
+        item_mask = row['itemp']
         numorc = row['numorc']
-        cadpro = row['cadpro']
-        quan1 = row['qtd']
-        vamed1 = row['valor']
-        vatomed1 = row['total']
-        codccusto = row['codccusto']
+        cadpro = PRODUTOS[row['cadpro']]
+        quan1 = row['quan1']
+        vamed1 = row['vamed1']
+        vatomed1 = row['vatomed1']
+        codccusto = CENTROCUSTOS[row['codccusto']]
         reduz = row['reduz']
-        numlic = row['numlic']
+        numlic = LICITACAO[(row['numpro'], row['sigla_ant'], row['ano'])]
         microempresa = row['microempresa']
         tlance = row['tlance']
-        item_ag = row['itemorc_ag']
+        item_ag = row['itemp']
         id_cadorc = row['id_cadorc']
-        marca = None
 
-        cur_fdb.execute(insert,(item, item_mask, numorc, cadpro, quan1, vamed1, vatomed1, codccusto, reduz, numlic, microempresa, tlance, item_ag, id_cadorc))
-        commit()
+        try:
+            cur_fdb.execute(insert,(item, item_mask, numorc, cadpro, quan1, vamed1, vatomed1, codccusto, reduz, numlic, microempresa, tlance, item_ag, id_cadorc))
+            commit()
+        except:
+            i+= 1
+            continue
     cur_fdb.execute('''INSERT INTO CADPROLIC_DETALHE (NUMLIC,item,CADPRO,quan1,VAMED1,VATOMED1,marca,CODCCUSTO,ITEM_CADPROLIC) 
                        select numlic, item, cadpro, quan1, vamed1, vatomed1, marca, codccusto, item from cadprolic''')
+    print(i)
 
-LICITACAO = licitacoes()
 NOME_FORNECEDOR, INSMF_FORNECEDOR = fornecedores()
 def prolic_prolics():
     cur_fdb.execute('DELETE FROM PROLICS')
