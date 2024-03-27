@@ -1,48 +1,47 @@
-# -*- coding: latin1 -*-
 from modulos import *
 import conexao
 
 def main():
 ##### COMPRAS #####
-    # compras.base.cadunimedida()
-    # compras.base.grupo_e_subgrupo()
-    # compras.base.cadest()
-    # compras.base.almoxarifado()
-    # compras.base.centro_custo()
+    compras.base.cadunimedida()
+    compras.base.grupo_e_subgrupo()
+    compras.base.cadest()
+    compras.base.almoxarifado()
+    compras.base.centro_custo()
 
-    # compras.solicitacoes.cadastro()
-    # compras.cotacoes.cadastro()
-    # compras.cotacoes.fornecedores()
-    # compras.cotacoes.valores()
+    compras.solicitacoes.cadastro()
+    compras.cotacoes.cadastro()
+    compras.cotacoes.fornecedores()
+    compras.cotacoes.valores()
 
-    # compras.licitacao.cadlic()
-    # compras.licitacao.cadprolic()
-    # tools.fornecedores_gerais()
-    # compras.licitacao.prolic_prolics()
-    # compras.licitacao.cadpro_proposta()
-    # compras.licitacao.cadpro_lance() 
-    # compras.licitacao.cadpro_final() 
-    # compras.licitacao.cadpro_status() 
-    # compras.licitacao.cadpro() 
-    # compras.licitacao.regpreco() 
-    # compras.licitacao.aditamento()
-    # compras.licitacao.cadpro_saldo_ant()
-    # compras.licitacao.fase_v()
+    compras.licitacao.cadlic()
+    compras.licitacao.cadprolic()
+    tools.fornecedores_gerais()
+    compras.licitacao.prolic_prolics()
+    compras.licitacao.cadpro_proposta()
+    compras.licitacao.cadpro_lance() 
+    compras.licitacao.cadpro_final() 
+    compras.licitacao.cadpro_status() 
+    compras.licitacao.cadpro() 
+    compras.licitacao.regpreco() 
+    compras.licitacao.aditamento()
+    compras.licitacao.cadpro_saldo_ant()
+    compras.licitacao.fase_v()
 
-    # compras.pedidos.cabecalho()
-    # compras.pedidos.itens()
+    compras.pedidos.cabecalho()
+    compras.pedidos.itens()
 
-#### ALMOXARIFADO #####   
-#     compras.estoque.almoxarif_para_ccusto()
-#     compras.estoque.requi_saldo_ant()
-#     compras.estoque.requi()
+### ALMOXARIFADO #####   
+    compras.estoque.almoxarif_para_ccusto()
+    compras.estoque.requi_saldo_ant()
+    compras.estoque.requi()
 
-# ##### FROTAS #####
-#     conexao.cur_sql.execute('USE SMARfrotas')
-    # frotas.motorista.cadastro()
-    # frotas.veiculos.modelo()
-#     frotas.veiculos.marca()
-#     frotas.veiculos.cadastro()   
+##### FROTAS #####
+    conexao.cur_sql.execute('USE SMARfrotas')
+    frotas.motorista.cadastro()
+    frotas.veiculos.modelo()
+    frotas.veiculos.marca()
+    frotas.veiculos.cadastro()   
     conexao.cur_sql.execute('USE SMARcompras_CM')
 
 ##### PATRIMÔNIO #####
