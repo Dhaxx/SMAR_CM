@@ -3,6 +3,8 @@ from ..tools import *
 from tqdm import tqdm
 
 def cadlic():
+    cur_fdb.execute('delete from prolic')
+    cur_fdb.execute('delete from prolics')
     cur_fdb.execute('delete from cadlic')
     cria_campo('ALTER TABLE CADLIC ADD criterio_ant varchar(30)')
     cria_campo('ALTER TABLE CADLIC ADD sigla_ant varchar(2)')
@@ -113,9 +115,8 @@ def cadlic():
                                             WHEN status IN ('R') THEN 7
                                             WHEN status IN ('F', 'C') THEN 6
                                             WHEN status IN ('D') THEN 5
-                                            WHEN status IN ('H', 'X', 'P') THEN 3
+                                            WHEN status IN ('H', 'X', 'P','A') THEN 3
                                             WHEN status in ('U') THEN 8
-                                            WHEN status IN ('A') THEN 2
                                             ELSE 1
                                         END comp,
                                         c676.anoc ano,
@@ -185,9 +186,8 @@ def cadlic():
                                             WHEN status IN ('R') THEN 7
                                             WHEN status IN ('F', 'C') THEN 6
                                             WHEN status IN ('D') THEN 5
-                                            WHEN status IN ('H', 'X', 'P') THEN 3
+                                            WHEN status IN ('H', 'X', 'P','A') THEN 3
                                             WHEN status in ('U') THEN 8
-                                            WHEN status IN ('A') THEN 2
                                             ELSE 1
                                         END comp,
                                         c914.anoc ano,
@@ -644,7 +644,7 @@ def prolic_prolics():
     global NOME_FORNECEDOR
 
     consulta = fetchallmap(f"""select
-                                    distinct *
+                                    distinct query.*, rtrim(t614.dcto01) insmf
                                 from
                                     (
                                     select
@@ -657,8 +657,7 @@ def prolic_prolics():
                                             else 'A'
                                         end status,
                                         'N' usa_preferencia,
-                                        null nome_ant,
-                                        cast(codfor as varchar) insmf
+                                        null nome_ant
                                     from
                                         mat.MCT70100
                                 union all
@@ -669,8 +668,7 @@ def prolic_prolics():
                                         cast(codfor as integer) codif,
                                         'A' status,
                                         'N' usa_preferencia,
-                                        null nome_ant,
-                                       cast(codfor as varchar) insmf
+                                        null nome_ant
                                     from
                                         mat.mct90400
                                 union all
@@ -684,8 +682,7 @@ def prolic_prolics():
                                             when direitoPreferencia = 1 then 'S'
                                             else 'N'
                                         END usa_preferencia,
-                                        substring(razao_social, 0, 40) nome_ant,
-                                        SUBSTRING(documento, 0, 19) insmf
+                                        substring(razao_social, 0, 40) nome_ant
                                     from
                                         mat.MCT81800 m
                                     where
@@ -701,15 +698,19 @@ def prolic_prolics():
                                             when direitoPreferencia = 1 then 'S'
                                             else 'N'
                                         END usa_preferencia,
-                                        substring(razao_social, 0, 40) nome_ant,
-                                        SUBSTRING(documento, 0, 19) insmf
+                                        substring(razao_social, 0, 40) nome_ant
                                     from
                                         mat.MCT81800 m
                                     where
                                         codfor is not null
                                         and codfor <> '') as query
+                                left join mat.MXT60100 t601 on
+                                    t601.codfor = [codif]
+                                left join mat.MXT61400 t614 on
+                                    t614.codnom = t601.codnom
                                 where
-                                    ano >= {ANO-5} and status = 'A'""")
+                                    ano >= {ANO-5}
+                                    and status = 'A'""")
 
     insert_prolic = cur_fdb.prep('insert into prolic (codif, nome, status, numlic) values (?,?,?,?)')
     insert_prolics = cur_fdb.prep('insert into prolics (sessao, codif, status, representante, numlic, usa_preferencia, codif_ant) values (?,?,?,?,?,?,?)')
@@ -740,30 +741,31 @@ def prolic_prolics():
     commit()
 
 def cadpro_status():
-    cur_fdb.execute('DELETE FROM CADPRO_STATUS')
+    # cur_fdb.execute('DELETE FROM CADPRO_STATUS')
 
     consulta = cur_fdb.execute("""SELECT
                                     1 sessao,
                                     a.LOTELIC,
                                     item,
                                     CASE WHEN b.COMP = 3 THEN 'I_ENCERRAMENTO' ELSE NULL END AS TELAFINAL,
-                                    CASE WHEN b.COMP = 3 THEN 'S' ELSE NULL END AS ACEITO,
+                                    CASE WHEN b.COMP = 3 and b.status_ant IN ('H', 'X', 'P') THEN 'S' ELSE NULL END AS ACEITO,
                                     b.NUMLIC 
                                 FROM
                                     CADPROLIC a
                                 JOIN cadlic b ON
                                     a.NUMLIC = b.NUMLIC""").fetchallmap()
     
-    insert = cur_fdb.prep('insert into cadpro_status (numlic, sessao, itemp, item) values (?,?,?,?)')
+    insert = cur_fdb.prep('insert into cadpro_status (numlic, sessao, itemp, item, telafinal) values (?,?,?,?,?)')
 
     for row in tqdm(consulta, desc='Inserindo Stauts...'):
         numlic = row['numlic']
         itemp = row['item']
         item = row['item']
+        telafinal = row['telafinal']
 
-        cur_fdb.execute(insert,(numlic, '1', itemp, item))
+        cur_fdb.execute(insert,(numlic, '1', itemp, item, telafinal))
     cur_fdb.execute("update cadlic set liberacompra = 'S' where comp = 3 and status_ant in ('X','H','P')")
-    cur_fdb.execute("update cadlic set liberacompra = 'N' where comp = 3 and status_ant in ('A')")
+    cur_fdb.execute("update cadlic set liberacompra = 'N' where status_ant in ('A')")
     commit()
 
 def cadpro_proposta():
@@ -771,7 +773,7 @@ def cadpro_proposta():
     commit()
 
     ###### SELECT DA PROPOSTA COM ITENS DESAGRUPADOS
-    consulta = fetchallmap(f"""select DISTINCT * from (select
+    consulta = fetchallmap(f"""select distinct a.*, isnull(rtrim(t614.dcto01),a.[codif]) insmf from (select DISTINCT * from (select
                                     1 sessao,
                                     codfor codif,
                                     --ROW_NUMBER() over (partition by isnull(codfor,insmf), convit order by nuitem) item,
@@ -782,7 +784,6 @@ def cadpro_proposta():
                                     case when venc is null then 'D' else 'C' end as status,
                                     venc subem,
                                     rtrim(marca) marca,
-                                    rtrim(isnull(insmf,codfor)) insmf,
                                     right('00000000'+cast(nrolote as varchar),8) lotelic,
                                     sigla sigla_ant,
                                     convit numpro,
@@ -876,7 +877,7 @@ def cadpro_proposta():
                                         c934.IdLote = c803.idLote
                                     LEFT JOIN mat.MCT07200 c072 ON
                                         c072.idfornecedor = c698.idMCT072
-                                    where c697.anoc >= {ANO-5}
+                                    where c697.anoc >= 2023
                                     GROUP BY
                                         c697.IdProcCompra,
                                         c697.unges,
@@ -920,7 +921,6 @@ def cadpro_proposta():
                                     case when isnull(class,venc) is null then 'D' else 'C' end as status,
                                     venc subem,
                                     rtrim(marca) marca,
-                                    rtrim(isnull(insmf,codfor)) insmf,
                                     right('00000000'+cast(nrolote as varchar),8) lotelic,
                                     sigla sigla_ant,
                                     convit numpro,
@@ -1033,7 +1033,12 @@ def cadpro_proposta():
                                         c905.modelo,
                                         c934.nrolote,
                                         c934.descricao,
-                                        c072.nrcpfcnpj) as query) as rn
+                                        c072.nrcpfcnpj) as query) as rn) as a
+                                        left join mat.MXT60100 t601 on
+                                    	t601.codfor = [codif]
+		                                left join mat.MXT61400 t614 on
+		                                t614.codnom = t601.codnom
+                                        --where sigla_ant = 01 and ano = 2023 and numpro = 48
                                         order by [subem] desc""")
 
     insert = cur_fdb.prep('insert into cadpro_proposta (codif, sessao, numlic, itemp, item, quan1, vaun1, vato1, status, marca, subem) values (?,?,?,?,?,?,?,?,?,?,?)')
@@ -1061,9 +1066,6 @@ def cadpro_proposta():
             cur_fdb.execute(insert,(codif, sessao, numlic, itemp, item, quan1, vaun1, vato1, status, marca, subem))
         except:
             continue
-
-        if i % 1000 == 0:
-            commit()
     commit()
 
 def cadpro_lance():

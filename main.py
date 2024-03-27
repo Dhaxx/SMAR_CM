@@ -15,7 +15,7 @@ def main():
     # compras.cotacoes.fornecedores()
     # compras.cotacoes.valores()
 
-    # compras.licitacao.cadlic()
+    compras.licitacao.cadlic()
     compras.licitacao.cadprolic()
     tools.fornecedores_gerais()
     compras.licitacao.prolic_prolics()
