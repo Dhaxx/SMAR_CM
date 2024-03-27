@@ -1217,56 +1217,6 @@ def regpreco():
                         END;""")
     commit()
 
-def vincula_cotacao_licitacao():
-    cur_fdb.execute('update icadorc set numlic = null')
-    commit()
-
-    consulta = fetchallmap(f"""
-                            select
-                                anogrupo,
-                                cast(codgrupo as varchar) codgrupo,
-                                convit,
-                                sigla,
-                                anoc,
-                                'S' registropreco,
-                                RIGHT('000000'+cast(convit as varchar),6)+'/'+SUBSTRING(anoc,3,2) proclic 
-                            from
-                                mat.MCT91200
-                            where
-                                anogrupo >= {ANO-5}
-                                and convit is not null
-                                --Agrupamento RP
-                            union all
-                            select
-                                anogrupo,
-                                cast(codgrupo as varchar) codgrupo,
-                                convit,
-                                sigla,
-                                anoc,
-                                'N' registropreco,
-                                RIGHT('000000'+cast(convit as varchar),6)+'/'+SUBSTRING(anoc,3,2) proclic
-                            from
-                                mat.MCT80200
-                            where
-                                anogrupo >= {ANO-5}
-                                and convit is not null
-                                --Agrupamento
-                            order by
-                                anogrupo,
-                                codgrupo
-                            """)
-    
-    update = cur_fdb.prep('Update cadorc set numlic = ?, proclic = ? where numorc = ?')
-    
-    for row in tqdm(consulta, desc='Vinculando licitações x cotações...'):
-        numlic = LICITACAO[(int(row['convit']), row['sigla'], row['anoc'])] #, row['registropreco']
-        try:
-            numorc = COTACAO[(row['codgrupo'], row['anoc'], row['registropreco'])]
-            cur_fdb.execute(update,(numlic,row['proclic'],numorc))
-        except:
-            continue
-    commit()
-
 PRODUTOS = produtos()
 def aditamento():
     consulta = fetchallmap(f"""select

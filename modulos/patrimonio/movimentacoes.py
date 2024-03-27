@@ -111,7 +111,7 @@ def ajuste():
         data_mov = row['datae_pat']
         tipo_mov = 'R'
         incorpora_mov = 'N'
-        depreciacao_mov = 'S'
+        depreciacao_mov = 'N'
         codigo_set_mov = row['codigo_set_pat']
         valor_mov = row['ajuste']
         documento_mov = 'AJUSTE'
