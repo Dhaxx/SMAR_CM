@@ -1332,3 +1332,22 @@ def fase_v():
         mascmod = (f"{processo[0]}-{processo[-1]}").replace(' ','')
         cur_fdb.execute(f"update cadlic set codtce = {row['codtce']}, enviotce = 'S', valor = {row['valor']}  where mascmod = '{mascmod}'")
     commit()
+
+def vinculacao_contratos():
+    updates = []
+    consulta = fetchallmap(f'''select
+                                c.idContrato ,
+                                cast(g.sigla as varchar) +'-'+ cast(g.convit as varchar)+'/'+ cast(g.anoc as varchar) as mascmod
+                            from
+                                mat.MDT00100 c
+                            join mat.mct80200 g on
+                                g.IdAgrupamento = c.idAgrupamento
+                            where g.anoc >= {ANO-5}''')
+    
+    for row in tqdm(consulta, desc='Inserindo Vinculação de Contratos...'):
+        cur_fdb.execute(f"update contratos a set a.proclic = (select b.proclic from cadlic b where b.mascmod='{row['mascmod']}') where a.idcontratoam = {row['idContrato']}")
+        updates.append(f"update contratos a set a.proclic = (select b.proclic from cadlic b where b.mascmod='{row['mascmod']}') where a.idcontratoam = {row['idContrato']};")
+        commit()
+    cur_fdb.execute("UPDATE contratos a SET a.numlic = (SELECT b.nlicitacao FROM CADLICITACAO b WHERE a.proclic = b.proclic) WHERE a.proclic IS NOT NULL")
+    commit()
+    # print(updates)
