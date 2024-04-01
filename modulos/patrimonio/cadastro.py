@@ -97,7 +97,7 @@ def bens():
         orig_pat = row['orig_pat']
         codigo_tip_pat = row['codigo_tip_pat']
         codigo_sit_pat = row['codigo_sit_pat']
-        discr_pat = row['discr_pat']
+        discr_pat = (row['discr_pat']).replace('\x90','')
         obs_pat = row['obsgeral']
         datae_pat = row['datae_pat']
         dtlan_pat = row['dtlan_pat']

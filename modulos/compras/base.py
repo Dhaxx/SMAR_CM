@@ -168,10 +168,10 @@ def cadest():
         grupo = row['grupo']
         subgrp = row['subgrp']
         codigo = row['codigo']
-        disc1 = row['disc1']
+        disc1 = (row['disc1']).replace('\x90','')
         tipopro = row['tipopro']
         unid1 = row['unid1']
-        discr1 = row['discr1']
+        discr1 = (row['discr1']).replace('\x90','')
         codreduz = row['codigo']
         ocultar = row['ocultar']
         estrut_ant = row['estrut_ant']

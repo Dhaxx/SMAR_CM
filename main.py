@@ -37,12 +37,12 @@ def main():
     compras.estoque.requi()
 
 ##### FROTAS #####
-    conexao.cur_sql.execute('USE SMARfrotas')
-    frotas.motorista.cadastro()
-    frotas.veiculos.modelo()
-    frotas.veiculos.marca()
-    frotas.veiculos.cadastro()   
-    conexao.cur_sql.execute('USE SMARcompras_CM')
+    # conexao.cur_sql.execute('USE SMARfrotas')
+    # frotas.motorista.cadastro()
+    # frotas.veiculos.modelo()
+    # frotas.veiculos.marca()
+    # frotas.veiculos.cadastro()   
+    # conexao.cur_sql.execute('USE SMARcompras_CM')
 
 ##### PATRIMÔNIO #####
     patrimonio.base.tipos_mov()
