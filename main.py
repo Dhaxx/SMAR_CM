@@ -25,17 +25,16 @@ def main():
     # compras.licitacao.cadpro() 
     # compras.licitacao.regpreco() 
     # compras.licitacao.aditamento()
-    # compras.licitacao.cadpro_saldo_ant()
     # compras.licitacao.fase_v()
-#     compras.licitacao.vinculacao_contratos()
+    # compras.licitacao.vinculacao_contratos()
 
-#     compras.pedidos.cabecalho()
-#     compras.pedidos.itens()
+    compras.pedidos.cabecalho()
+    compras.pedidos.itens()
 
 # ##### ALMOXARIFADO #####   
-    compras.estoque.almoxarif_para_ccusto()
-    compras.estoque.requi_saldo_ant()
-    compras.estoque.requi()
+    # compras.estoque.almoxarif_para_ccusto()
+    # compras.estoque.requi_saldo_ant()
+    # compras.estoque.requi()
 
 # ##### FROTAS #####
 #     conexao.cur_sql.execute('USE SMARfrotas')
