@@ -27,36 +27,42 @@ def main():
     # compras.licitacao.aditamento()
     # compras.licitacao.cadpro_saldo_ant()
     # compras.licitacao.fase_v()
-    compras.licitacao.vinculacao_contratos()
+#     compras.licitacao.vinculacao_contratos()
 
-    compras.pedidos.cabecalho()
-    compras.pedidos.itens()
+#     compras.pedidos.cabecalho()
+#     compras.pedidos.itens()
 
-##### ALMOXARIFADO #####   
+# ##### ALMOXARIFADO #####   
     compras.estoque.almoxarif_para_ccusto()
     compras.estoque.requi_saldo_ant()
     compras.estoque.requi()
 
-##### FROTAS #####
-    conexao.cur_sql.execute('USE SMARfrotas')
-    frotas.motorista.cadastro()
-    frotas.veiculos.modelo()
-    frotas.veiculos.marca()
-    frotas.veiculos.cadastro()   
-    conexao.cur_sql.execute('USE SMARcompras_CM')
+# ##### FROTAS #####
+#     conexao.cur_sql.execute('USE SMARfrotas')
+#     frotas.motorista.cadastro()
+#     frotas.veiculos.modelo()
+#     frotas.veiculos.marca()
+#     frotas.veiculos.cadastro()   
+#     conexao.cur_sql.execute('USE SMARcompras_CM')
 
 ##### PATRIMÔNIO #####
-    patrimonio.base.tipos_mov()
-    patrimonio.base.tipos_ajuste()
-    patrimonio.base.tipos_baixa()
-    patrimonio.base.tipos_bens()
-    patrimonio.base.tipos_situacao()
-    patrimonio.base.grupos()
-    patrimonio.base.unidade_subunidade()
-    patrimonio.cadastro.bens()
-    patrimonio.movimentacoes.aquisicao()
-    patrimonio.movimentacoes.ajuste()
-    patrimonio.movimentacoes.baixas()
+    # patrimonio.base.tipos_mov()
+#     patrimonio.base.tipos_ajuste()
+#     patrimonio.base.tipos_baixa()
+#     patrimonio.base.tipos_bens()
+#     patrimonio.base.tipos_situacao()
+#     patrimonio.base.grupos()
+#     patrimonio.base.unidade_subunidade()
+#     patrimonio.cadastro.bens()
+#     patrimonio.movimentacoes.aquisicao()
+#     patrimonio.movimentacoes.ajuste()
+#     patrimonio.movimentacoes.baixas()
+
+##### AJUSTES #####
+    # tools.aditivos_contratos()
 
 if __name__ == '__main__':
     main()
+
+
+
