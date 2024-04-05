@@ -30,7 +30,7 @@ def main():
 
     # compras.pedidos.cabecalho()
     # compras.pedidos.itens()
-    compras.estoque.subpedidos()
+    # compras.estoque.subpedidos()
 
 # ##### ALMOXARIFADO #####   
     # compras.estoque.almoxarif_para_ccusto()
@@ -60,6 +60,7 @@ def main():
 
 ##### AJUSTES #####
     # tools.aditivos_contratos()
+    tools.insere_cadpro_cadped()
 
 if __name__ == '__main__':
     main()
