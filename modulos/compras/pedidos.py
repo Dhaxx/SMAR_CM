@@ -5,6 +5,7 @@ from tqdm import tqdm
 PRODUTOS = produtos()
 LICITACAO = licitacoes()
 CENTROCUSTO = depara_ccusto()
+NOME_FORNECEDOR, INSMF_FORNECEDOR = fornecedores()
 
 def cabecalho():
     cria_campo('ALTER TABLE cadped ADD af_ant varchar(10)')
@@ -24,13 +25,14 @@ def cabecalho():
     
     consulta = fetchallmap(f"""select
                                     distinct
-                                                                    RIGHT('00000' + cast(a.af AS varchar),
+                                    RIGHT('00000' + cast(a.af AS varchar),
                                     5)+ '/' + SUBSTRING(a.nafano, 3, 2) numped,
                                     RIGHT('00000' + cast(a.af as varchar),
                                     5) num,
                                     a.nafano ano,
                                     a.nafdta datped,
                                     a.codfor,
+                                    rtrim(e.dcto01) insmf,
                                     'N' entrou,
                                     isnull(c.UnidOrc,
                                     '001.001.001.001.000') UnidOrc,
@@ -51,15 +53,20 @@ def cabecalho():
                                     a.af = b.af and a.nafano = b.nafano
                                 left join mat.UnidOrcamentariaW c on
                                     a.idNivel5 = c.idNivel5
+                                join mat.MXT60100 d on
+                                    d.codfor = a.codfor
+                                left join mat.MXT61400 e on
+                                    d.codnom = e.codnom 
                                 where
-                                    a.anoc >= {ANO-5}""")
+                                    a.anoc >= {ANO-5}
+                                order by [num], [ano]""")
     
     for row in tqdm(consulta, desc='Pedidos - Cabecalho'):
         numped = row['numped']
         num = row['num']
         ano = row['ano']
         datped = row['datped']
-        codif = row['codfor']
+        codif = INSMF_FORNECEDOR.get(row['insmf'], row['codfor']) 
         total = '0'
         entrou = row['entrou']
         codccusto = CENTROCUSTO[row['UnidOrc']]
@@ -113,7 +120,7 @@ def itens():
                                 LEFT JOIN mat.UnidOrcamentariaW c ON
                                     a.idNivel5 = c.idNivel5
                                 WHERE
-                                    a.anoc >= 2019 and a.af is not NULL 
+                                    a.anoc >= {ANO-5} and a.af is not NULL 
                                 order by [numped], [nuitem]
                                 """)
     

@@ -28,8 +28,9 @@ def main():
     # compras.licitacao.fase_v()
     # compras.licitacao.vinculacao_contratos()
 
-    compras.pedidos.cabecalho()
-    compras.pedidos.itens()
+    # compras.pedidos.cabecalho()
+    # compras.pedidos.itens()
+    compras.estoque.subpedidos()
 
 # ##### ALMOXARIFADO #####   
     # compras.estoque.almoxarif_para_ccusto()
