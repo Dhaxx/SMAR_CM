@@ -319,69 +319,69 @@ def aditivos_contratos():
             f.write("%s\n" % cmd)
 
 def insere_cadpro_cadped():
-    filtro = ['01-3/2019',                                                                                                                                                                                                                                                 
-                '02-1/2019',
-                '02-293/2019',
-                '16-4/2019',
-                '16-5/2019',
-                '16-6/2019',
-                '16-8/2019',
-                '16-10/2019',
-                '16-12/2019',
-                '16-13/2019',
-                '16-14/2019',
-                '16-175/2019',
-                '16-187/2019',
-                '17-1/2019',
-                '17-2/2019',
-                '17-3/2019',
-                '17-7/2019',
-                '17-9/2019',
-                '17-11/2019',
-                '17-15/2019',
-                '05-276/2019',
-                '05-311/2019',
-                '17-2/2020',
-                '17-3/2020',
-                '17-4/2020',
-                '17-9/2020',
-                '17-10/2020',
-                '16-1/2020',
-                '16-5/2020',
-                '16-6/2020',
-                '16-7/2020',
-                '16-8/2020',
-                '04-48/2020',
-                '04-115/2020',
-                '01-20/2021',
-                '01-134/2021',
-                '02-132/2021',
-                '02-155/2021',
-                '04-77/2021',
-                '16-2/2021',
-                '16-3/2021',
-                '17-1/2021',
-                '17-4/2021',
-                '17-5/2021',
-                '05-97/2022',
-                '05-191/2022',
-                '17-5/2022',
-                '17-8/2022',
-                '16-2/2022',
-                '16-4/2022',
-                '16-6/2022',
-                '16-7/2022',
-                '16-9/2022',
-                '04-73/2022',
-                '02-47/2022',
-                '02-105/2022',
-                '01-8/2022',
-                '01-42/2022',
-                '01-56/2022',
-                '01-70/2022',
-                '01-89/2022',
-                '01-192/2022',
-                '01-198/2022']
+    filtro = [60,
+4,
+185,
+61,
+41,
+56,
+131,
+125,
+182,
+178,
+177,
+51,
+84,
+234,
+18,
+19,
+106,
+137,
+175,
+183,
+162,
+203,
+309,
+328,
+360,
+382,
+392,
+296,
+361,
+364,
+365,
+366,
+260,
+335,
+434,
+560,
+557,
+586,
+494,
+485,
+515,
+460,
+529,
+593,
+737,
+846,
+730,
+814,
+674,
+724,
+773,
+779,
+842,
+709,
+675,
+745,
+629,
+668,
+688,
+705,
+727,
+847,
+854]
     
     for row in filtro:
         cur_fdb.execute(f"""INSERT
@@ -429,7 +429,7 @@ def insere_cadpro_cadped():
                                 cadped c ON
                                 i.ID_CADPED = c.ID_CADPED
                             WHERE
-                                mascmod_ant = '{row[0]}'
+                                numlic = {row}
                             GROUP BY
                                 c.CODIF,
                                 i.CADPRO,
@@ -492,7 +492,7 @@ def insere_cadpro_cadped():
                                 cadped c ON
                                 i.ID_CADPED = c.ID_CADPED
                             WHERE
-                                mascmod_ant = '{row}'
+                                numlic = '{row}'
                             GROUP BY
                                 c.CODIF,
                                 i.CADPRO,
@@ -508,4 +508,48 @@ def insere_cadpro_cadped():
                                 i.QTD,
                                 i.PRCUNT,
                                 tpcontrole_saldo;\n""")
+    commit()
+
+def insere_cadprolic_faltante():
+    consulta = fetchallmap("""select
+                                ROW_NUMBER() over (partition by sigla, convit, anoc order by estrut + '.' + grupo + '.' + subgrp + '.' + itemat + '-' + digmat) item,
+                                estrut + '.' + grupo + '.' + subgrp + '.' + itemat + '-' + digmat cadpro,
+                                qtde quan1,
+                                valunit vamed1,
+                                qtde * valunit vatomed1,
+                                1 codccusto,
+                                'N' reduz,
+                                'N' microempresa,
+                                '$' tlance,
+                                nuitem item_ag,
+                                sigla,
+                                convit, 
+                                anoc
+                            from
+                                mat.MCT67700
+                            where
+                                cast(codgrupo as varchar)+'/'+anogrupo in ('29/2024','26/2024', '34/2024')""")
+    
+    insert = cur_fdb.prep("""INSERT
+                            INTO
+                            cadprolic (item,
+                            item_mask,
+                            numorc,
+                            cadpro,
+                            quan1,
+                            vamed1,
+                            vatomed1,
+                            codccusto,
+                            reduz,
+                            numlic,
+                            microempresa,
+                            tlance,
+                            item_ag,
+                            id_cadorc) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""")
+    
+    for row in tqdm(consulta, desc='Inserindo Cadprolic Faltante'):
+        cadpro = produtos().get(row['cadpro'], None)
+        numlic = licitacoes().get((row['convit'], row['sigla'], row['anoc']), None)
+
+        cur_fdb.execute(insert,(row['item'],row['item'],None,cadpro,row['quan1'],row['vamed1'],row['vatomed1'],row['codccusto'],row['reduz'],numlic,row['microempresa'],row['tlance'],row['item'],None))
     commit()

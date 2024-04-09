@@ -15,7 +15,7 @@ def main():
     # compras.cotacoes.valores()
 
     # compras.licitacao.cadlic()
-    # compras.licitacao.cadprolic()
+    compras.licitacao.cadprolic()
     # tools.fornecedores_gerais()
     # compras.licitacao.prolic_prolics()
     # compras.licitacao.cadpro_proposta()
@@ -60,7 +60,8 @@ def main():
 
 ##### AJUSTES #####
     # tools.aditivos_contratos()
-    tools.insere_cadpro_cadped()
+    # tools.insere_cadpro_cadped()
+    # compras.licitacao.insere_cadprolic_faltante()
 
 if __name__ == '__main__':
     main()

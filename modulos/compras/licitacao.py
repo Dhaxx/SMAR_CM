@@ -416,7 +416,7 @@ from
 		LEFT JOIN mat.MCT07200 c072 ON
 			c072.idfornecedor = c698.idMCT072
 		where
-			c697.anoc >= 2023
+			c697.anoc >= {ANO-5}
 		GROUP BY
 			c697.IdProcCompra,
 			c697.unges,
@@ -557,7 +557,7 @@ Union all
 			LEFT JOIN mat.MCT07200 c072 ON
 				c072.idfornecedor = c905.idMCT072
 			where
-				c905.anoc >= 2023
+				c905.anoc >= {ANO-5}
 			GROUP BY
 				c905.unges,
 				c905.sigla,
@@ -877,7 +877,7 @@ def cadpro_proposta():
                                         c934.IdLote = c803.idLote
                                     LEFT JOIN mat.MCT07200 c072 ON
                                         c072.idfornecedor = c698.idMCT072
-                                    where c697.anoc >= 2023
+                                    where c697.anoc >= {ANO-5}
                                     GROUP BY
                                         c697.IdProcCompra,
                                         c697.unges,
