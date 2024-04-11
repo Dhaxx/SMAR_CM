@@ -3,9 +3,9 @@ from ..tools import *
 from tqdm import tqdm
 
 def cadlic():
-    cur_fdb.execute('delete from prolic')
-    cur_fdb.execute('delete from prolics')
-    cur_fdb.execute('delete from cadlic')
+    # # cur_fdb.execute('delete from prolic')
+    # # cur_fdb.execute('delete from prolics')
+    # # cur_fdb.execute('delete from cadlic')
     cria_campo('ALTER TABLE CADLIC ADD criterio_ant varchar(30)')
     cria_campo('ALTER TABLE CADLIC ADD sigla_ant varchar(2)')
     cria_campo('ALTER TABLE CADLIC ADD status_ant varchar(1)')
@@ -149,7 +149,7 @@ def cadlic():
                                         and c806.anoc = c676.anoc
                                         and c806.sigla = c676.sigla
                                     WHERE
-                                        c676.anoc >= {ANO-5}
+                                        c676.anoc = 2018
                                 union ALL
                                     SELECT
                                         c914.convit numpro,
@@ -220,8 +220,8 @@ def cadlic():
                                         and c903.anoc = c914.anoc
                                         and c903.sigla = c914.sigla
                                     where
-                                        c914.anoc >= {ANO-5}
-                                                                                                ) AS subconsulta
+                                        c914.anoc = 2018) AS subconsulta
+                                    where [numpro] = 13 and [ano] = 2018
                                 ORDER BY
                                     proclic,
                                     ANO;""")
@@ -274,13 +274,15 @@ def cadlic():
                   WHERE numlic not in (SELECT FIRST 1 S.NUMLIC FROM CADLIC_SESSAO S WHERE S.NUMLIC = L.NUMLIC)''')
     cur_fdb.execute('''UPDATE cadlic SET MASCMOD = SIGLA_ANT||'-'||NUMPRO||'/'||ANO''')
     cur_fdb.execute('UPDATE CONTRATOS a SET a.PROCLIC = (SELECT b.proclic FROM cadlic b WHERE b.processo = a.proclic AND a.ano = b.ano and a.codif = b.codif)')
+    cur_fdb.execute('''update cadlic a set gera_contrato_tce='S' where proclic in (select proclic from contratos)''')
+    cur_fdb.execute('''update cadlic a set gera_contrato_tce='N' where proclic not in (select proclic from contratos);''')
     commit()
 
 LICITACAO = licitacoes()
 PRODUTOS = produtos()
 
 def cadprolic():
-    cur_fdb.execute('DELETE FROM CADPROLIC')
+    # cur_fdb.execute('delete FROM CADPROLIC')
     commit()
     CENTROCUSTOS = depara_ccusto()
 
@@ -416,7 +418,7 @@ from
 		LEFT JOIN mat.MCT07200 c072 ON
 			c072.idfornecedor = c698.idMCT072
 		where
-			c697.anoc >= {ANO-5}
+			c697.anoc = 2018
 		GROUP BY
 			c697.IdProcCompra,
 			c697.unges,
@@ -557,7 +559,7 @@ Union all
 			LEFT JOIN mat.MCT07200 c072 ON
 				c072.idfornecedor = c905.idMCT072
 			where
-				c905.anoc >= {ANO-5}
+				c905.anoc = 2018
 			GROUP BY
 				c905.unges,
 				c905.sigla,
@@ -585,7 +587,7 @@ Union all
 				c934.nrolote,
 				c934.descricao,
 				c072.nrcpfcnpj) as query) as rn
-				where subem = 1""")
+				where subem = 1 and [numpro] = 13 and [ano] = 2018""")
     
     insert = cur_fdb.prep("""INSERT
                             INTO
@@ -634,8 +636,8 @@ Union all
 
 NOME_FORNECEDOR, INSMF_FORNECEDOR = fornecedores()
 def prolic_prolics():
-    cur_fdb.execute('DELETE FROM PROLICS')
-    cur_fdb.execute('DELETE FROM PROLIC')
+    # cur_fdb.execute('delete FROM PROLICS')
+    # cur_fdb.execute('delete FROM PROLIC')
     cria_campo('alter table prolics add codif_ant varchar(50)')
 
     i = 0
@@ -709,8 +711,9 @@ def prolic_prolics():
                                 left join mat.MXT61400 t614 on
                                     t614.codnom = t601.codnom
                                 where
-                                    ano >= {ANO-5}
-                                    and status = 'A'""")
+                                    ano = 2018
+                                    and status = 'A'
+                                    and numpro = 13""")
 
     insert_prolic = cur_fdb.prep('insert into prolic (codif, nome, status, numlic) values (?,?,?,?)')
     insert_prolics = cur_fdb.prep('insert into prolics (sessao, codif, status, representante, numlic, usa_preferencia, codif_ant) values (?,?,?,?,?,?,?)')
@@ -741,7 +744,7 @@ def prolic_prolics():
     commit()
 
 def cadpro_status():
-    # cur_fdb.execute('DELETE FROM CADPRO_STATUS')
+    # # cur_fdb.execute('delete FROM CADPRO_STATUS')
 
     consulta = cur_fdb.execute("""SELECT
                                     1 sessao,
@@ -753,7 +756,7 @@ def cadpro_status():
                                 FROM
                                     CADPROLIC a
                                 JOIN cadlic b ON
-                                    a.NUMLIC = b.NUMLIC""").fetchallmap()
+                                    a.NUMLIC = b.NUMLIC where a.numlic = 17""").fetchallmap()
     
     insert = cur_fdb.prep('insert into cadpro_status (numlic, sessao, itemp, item, telafinal) values (?,?,?,?,?)')
 
@@ -769,7 +772,7 @@ def cadpro_status():
     commit()
 
 def cadpro_proposta():
-    cur_fdb.execute('DELETE FROM cadpro_proposta')
+    # cur_fdb.execute('delete FROM cadpro_proposta')
     commit()
 
     ###### SELECT DA PROPOSTA COM ITENS DESAGRUPADOS
@@ -877,7 +880,7 @@ def cadpro_proposta():
                                         c934.IdLote = c803.idLote
                                     LEFT JOIN mat.MCT07200 c072 ON
                                         c072.idfornecedor = c698.idMCT072
-                                    where c697.anoc >= {ANO-5}
+                                    where c697.anoc = 2018
                                     GROUP BY
                                         c697.IdProcCompra,
                                         c697.unges,
@@ -1006,7 +1009,7 @@ def cadpro_proposta():
                                         c934.IdLote = c913.idLote
                                     LEFT JOIN mat.MCT07200 c072 ON
                                         c072.idfornecedor = c905.idMCT072
-                                    where c905.anoc >= {ANO-5}
+                                    where c905.anoc = 2018
                                     GROUP BY
                                         c905.unges,
                                         c905.sigla,
@@ -1038,7 +1041,7 @@ def cadpro_proposta():
                                     	t601.codfor = [codif]
 		                                left join mat.MXT61400 t614 on
 		                                t614.codnom = t601.codnom
-                                        --where sigla_ant = 01 and ano = 2023 and numpro = 48
+                                        where [numpro] = 13 and [ano] = 2018
                                         order by [subem] desc""")
 
     insert = cur_fdb.prep('insert into cadpro_proposta (codif, sessao, numlic, itemp, item, quan1, vaun1, vato1, status, marca, subem) values (?,?,?,?,?,?,?,?,?,?,?)')
@@ -1069,12 +1072,12 @@ def cadpro_proposta():
     commit()
 
 def cadpro_lance():
-    cur_fdb.execute('delete from cadpro_lance')
+    # cur_fdb.execute('delete from cadpro_lance')
     cria_campo("alter table cadpro_lance add marca varchar(50)")
     commit()
     print('Inserindo os lances...')
     cur_fdb.execute("""insert into cadpro_lance (sessao, rodada, codif, itemp, vaunl, vatol, status, subem, numlic, marca)
-                        SELECT sessao, 1 rodada, CODIF, ITEMP, VAUN1, VATO1, 'F' status, SUBEM, numlic, marca FROM CADPRO_PROPOSTA cp where subem = 1""")
+                        SELECT sessao, 1 rodada, CODIF, ITEMP, VAUN1, VATO1, 'F' status, SUBEM, numlic, marca FROM CADPRO_PROPOSTA cp where subem = 1 and numlic = 17""")
     commit()
 
 def cadpro_final():
@@ -1082,7 +1085,7 @@ def cadpro_final():
     cria_campo("alter table cadpro_final add CQTDADT double precision")
     cria_campo("alter table cadpro_final add ccadpro varchar(20)")
     cria_campo("alter table cadpro_final add CCODCCUSTO integer;")
-    cur_fdb.execute('delete from cadpro_final')
+    # cur_fdb.execute('delete from cadpro_final')
     commit()
 
     cur_fdb.execute("""EXECUTE BLOCK
@@ -1109,7 +1112,7 @@ def cadpro_final():
 
 def cadpro():
     print('Inserindo Cadpro...')
-    cur_fdb.execute('delete from cadpro')
+    # cur_fdb.execute('delete from cadpro')
     
     cur_fdb.execute(f"""INSERT
                             INTO
@@ -1187,7 +1190,7 @@ def cadpro():
                             D.NUMLIC = A.NUMLIC
                         WHERE
                             a.SUBEM = 1
-                            AND a.STATUS = 'F'""")
+                            AND a.STATUS = 'F' and a.NUMLIC = 17""")
     commit()
 
 def regpreco():
@@ -1234,7 +1237,8 @@ def aditamento():
                                     b.idAditivo = a.IdAditivo
                                 join mat.MCT73300 c on
                                     c.IdAditivo = a.IdAditivo
-                                where b.anoc >= {ANO-5}
+                                where b.anoc = 2018
+                                and b.convit = 13
                                 GROUP by
                                     b.sigla,
                                     b.convit,
@@ -1261,7 +1265,7 @@ def aditamento():
 
 ITEM_PROPOSTA = item_da_proposta()
 def cadpro_saldo_ant():
-    cur_fdb.execute('delete from cadpro_saldo_ant')
+    # # cur_fdb.execute('delete from cadpro_saldo_ant')
     cria_campo('alter table cadpro_saldo_ant add codif_ant varchar(10)')
 
     insert = cur_fdb.prep("""insert into cadpro_saldo_ant (ano, numlic, item, cadpro, qtdped, vatoped, codif_ant) values (?,?,?,?,?,?,?)""")
@@ -1284,7 +1288,7 @@ def cadpro_saldo_ant():
                                 left join mat.UnidOrcamentariaW c on
                                     a.idNivel5 = c.idNivel5
                                 where
-                                    a.anoc BETWEEN {ANO-5} and {ANO-1}
+                                    a.anoc = 2018 and a.convit = 13
                                 GROUP by
                                     sigla,
                                     convit,
@@ -1342,7 +1346,8 @@ def vinculacao_contratos():
                                 mat.MDT00100 c
                             join mat.mct80200 g on
                                 g.IdAgrupamento = c.idAgrupamento
-                            where g.anoc >= {ANO-5}''')
+                            where g.anoc = 2018
+                            and g.convit = 13''')
     
     for row in tqdm(consulta, desc='Inserindo Vinculação de Contratos...'):
         cur_fdb.execute(f"update contratos a set a.proclic = (select b.proclic from cadlic b where b.mascmod='{row['mascmod']}') where a.idcontratoam = {row['idContrato']}")
