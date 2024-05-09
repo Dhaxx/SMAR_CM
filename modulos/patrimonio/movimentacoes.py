@@ -177,6 +177,63 @@ def baixas():
                     ''')
     commit()
 
+def reavaliacao():
+    cur_fdb.execute("delete from pt_movbem where tipo_mov = 'R' and depreciacao_mov = 'N'")
+
+    consulta = fetchallmap("""select
+                                    idpatrimonio,
+                                    mes,
+                                    ano,
+                                    dtreavaliacao data_mov,
+                                    vlrreavaliacao valor_mov,
+                                    237110301 codigo_cpl_mov
+                                from
+                                    mat.MPT80900
+                                --where idpatrimonio = 27""")
+    
+    insert = cur_fdb.prep('''INSERT INTO
+                                pt_movbem (codigo_mov,
+                                empresa_mov,
+                                codigo_pat_mov,
+                                data_mov,
+                                tipo_mov,
+                                codigo_cpl_mov,
+                                codigo_set_mov,
+                                valor_mov,
+                                historico_mov,
+                                lote_mov,
+                                percentual_mov,
+                                depreciacao_mov)
+                            values (?,?,?,?,?,?,?,?,?,?,?,?)
+                          ''')
+    
+    codigo_mov = cur_fdb.execute('SELECT COALESCE(MAX(CODIGO_MOV), 0) FROM PT_MOVBEM').fetchone()[0]
+
+    cadpat = cur_fdb.execute("select codigo_pat, valaqu_pat from pt_cadpat").fetchallmap()
+    valores = { row['codigo_pat']: row['valaqu_pat'] for row in cadpat}
+
+    for row in tqdm(consulta, desc='PATRIMÔNIO - INSERINDO REAVALIAÇÕES'):
+        codigo_mov += 1
+        empresa_mov = EMPRESA
+        codigo_pat_mov = row['idpatrimonio']
+        data_mov = row['data_mov']
+        tipo_mov = 'R'
+        codigo_cpl_mov = row['codigo_cpl_mov']
+        codigo_set_mov = 0
+        valor_mov = float(row['valor_mov']) - valores.get(row['idpatrimonio'],0) 
+        historico_mov = 'REAVALIAÇÃO - ' + str(row['mes']) + '/' + str(row['ano'])
+        lote_mov = None
+        percentual_mov = None
+        depreciacao_mov = 'N'
+
+        cur_fdb.execute(insert, (codigo_mov, empresa_mov, codigo_pat_mov, data_mov, tipo_mov, codigo_cpl_mov, codigo_set_mov, valor_mov, historico_mov,
+                                 lote_mov, percentual_mov, depreciacao_mov))
+    commit()
+    cur_fdb.execute("""update pt_cadpat a set a.dtlan_pat = (select first 1 b.data_mov from pt_movbem b where b.codigo_pat_mov = a.codigo_pat and b.tipo_mov = 'R' and b.depreciacao_mov = 'N'  order by b.data_mov desc),
+                       a.valatu_pat = (select first 1 b.valor_mov from pt_movbem b where b.codigo_pat_mov = a.codigo_pat and b.tipo_mov = 'R' and b.depreciacao_mov = 'N'  order by b.data_mov desc)
+                       where exists(select 1 from pt_movbem b where b.codigo_pat_mov = a.codigo_pat and b.tipo_mov = 'R' and b.depreciacao_mov = 'N')""")
+    commit()
+
 def depreciacoes():
     cur_fdb.execute("delete from pt_movbem where depreciacao_mov = 'S'")
 
@@ -199,7 +256,7 @@ def depreciacoes():
     
     consulta = fetchallmap('''
                                 select
-                                t808.IdPatrimonio,
+                                t808.IdPatrimonio codigo_pat_mov,
                                 t808.dtcalculo,
                                 'R' tipo_mov,
                                 nivel1 + '.' + nivel2 + '.' + nivel3 + '.' + nivel4 + '.' + nivel5 codigo_set_mov,
@@ -211,6 +268,7 @@ def depreciacoes():
                                 mat.MPT80800 t808
                             left join mat.MXT71100 t711 on
                                 t808.idunidorc = t711.IdNivel5
+                            --where idpatrimonio = 27
                             order by
                                 IdPatrimonio,
                                 t808.ano,
@@ -233,5 +291,7 @@ def depreciacoes():
         percentual_mov = row['percentual_mov']
         depreciacao_mov = row['depreciacao_mov']
 
-        cur_fdb.execute(insert, (codigo_mov, empresa_mov, codigo_pat_mov, data_mov, tipos_mov, codigo_cpl_mov, codigo_set_mov, valor_mov, historico_mov, lote_mov, percentual_mov, depreciacao_mov))
+        cur_fdb.execute(insert, (codigo_mov, empresa_mov, codigo_pat_mov, data_mov, tipos_mov, codigo_cpl_mov, codigo_set_mov, valor_mov, historico_mov,
+                                 lote_mov, percentual_mov, depreciacao_mov))
     commit()
+    cur_fdb.execute("EXECUTE PROCEDURE DEL_DEPRECIACAO_ANTREAV")

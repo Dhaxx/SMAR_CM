@@ -14,28 +14,28 @@ def main():
     # compras.cotacoes.fornecedores()
     # compras.cotacoes.valores()
 
-    compras.licitacao.cadlic()
+    # compras.licitacao.cadlic()
     # compras.licitacao.cadprolic()
     # tools.fornecedores_gerais()
-    compras.licitacao.prolic_prolics()
+    # compras.licitacao.prolic_prolics()
     # compras.licitacao.cadpro_proposta()
     # compras.licitacao.cadpro_lance() 
     # compras.licitacao.cadpro_final() 
     # compras.licitacao.cadpro_status() 
-    compras.licitacao.cadpro() 
-    compras.licitacao.regpreco() 
-    compras.licitacao.aditamento()
-    compras.licitacao.fase_v()
-    compras.licitacao.vinculacao_contratos()
+    # compras.licitacao.cadpro() 
+    # compras.licitacao.regpreco() 
+    # compras.licitacao.aditamento()
+    # compras.licitacao.fase_v()
+    # compras.licitacao.vinculacao_contratos()
 
     # compras.pedidos.cabecalho()
     # compras.pedidos.itens()
-    compras.estoque.subpedidos()
+    # compras.estoque.subpedidos()
 
 # ##### ALMOXARIFADO #####   
     # compras.estoque.almoxarif_para_ccusto()
     # compras.estoque.requi_saldo_ant()
-    # compras.estoque.requi()
+    compras.estoque.requi()
 
 # ##### FROTAS #####
 #     conexao.cur_sql.execute('USE SMARfrotas')
@@ -57,11 +57,14 @@ def main():
 #     patrimonio.movimentacoes.aquisicao()
 #     patrimonio.movimentacoes.ajuste()
 #     patrimonio.movimentacoes.baixas()
+    # patrimonio.movimentacoes.reavaliacao()
+    # patrimonio.movimentacoes.depreciacoes()
 
 ##### AJUSTES #####
     # tools.aditivos_contratos()
     # tools.insere_cadpro_cadped()
-    compras.licitacao.insere_cadprolic_faltante()
+    # compras.licitacao.insere_cadprolic_faltante()
+    
 
 if __name__ == '__main__':
     main()
