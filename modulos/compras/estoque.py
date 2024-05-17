@@ -85,44 +85,90 @@ def requi():
                             DATAE, ENTR, said, COMP, TIPOSAIDA, TPREQUI, obs, nrodct_ant) 
                             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""")
     
-    insert_icadreq = cur_fdb.prep("""insert into icadreq (id_requi, requi, codccusto, empresa, item, quan1, vaun1, vato1, cadpro, destino) 
-                                values (?,?,?,?,?,?,?,?,?,?)""")
+    insert_icadreq = cur_fdb.prep("""insert into icadreq (id_requi, requi, codccusto, empresa, item, quan1, vaun1, vato1, quan2, vaun2, vato2, cadpro, destino) 
+                                values (?,?,?,?,?,?,?,?,?,?,?,?,?)""")
 
-    consulta = fetchallmap(f"""	select *, [vato1] / [quan1] vaun1, case when [quan1] < 0 then 'S' else 'E' end tipo from (select 
-                                nrodct,
-                                dtadct,
-                                almox1+almox2+almox3 codccusto,
-                                itens,
-                                sum(case t.tipo_entsai when 'E' then qtdent else -qtdate  end ) quan1,
-                                sum(case t.tipo_entsai when 'E' then totite else -totite end ) vato1,
-                                estrut + '.' + grupo + '.' + subgrp + '.' + itemat + '-' + digmat cadpro,
-                                right('000000000'+(almox1+almox2+almox3),9) destino
-                            From mat.MET70100  e 
-                            join mat.met91600 t on t.cmatip  = e.cmatip 
-                            where year(dtadct) = {ANO}
-                            group by nrodct, dtadct, almox1, almox2, almox3,itens,estrut,grupo,subgrp,itemat,digmat
-                            /*estrut  = 1
-                            and grupo  = '03'
-                            and subgrp = '10'
-                            and itemat  = '0241'
-                            and digmat = 0
-                            and almox1 = 4
-                            and almox2 = '01'
-                            --and cancelado_brm  = 0
-                            --and t.tipo_entsai = 'S'*/) as query
-                            where [quan1] <> 0
-                            order by nrodct, itens""")
+    consulta = fetchallmap(f"""SELECT 
+                                    nrodct,
+                                    ano,
+                                    dtadct,
+                                    codccusto,
+                                    row_number() over (partition by nrodct, tipo order by nrodct, cadpro, tipo) itens,
+                                    SUM(CASE WHEN quan1 >= 0 THEN quan1 ELSE 0 END) AS quan1,
+                                    SUM(CASE WHEN vato1 >= 0 THEN vato1 ELSE 0 END) AS vato1,
+                                    SUM(CASE WHEN quan1 < 0 THEN quan1 ELSE 0 END) AS quan2,
+                                    SUM(CASE WHEN vato1 < 0 THEN vato1 ELSE 0 END) AS vato2,
+                                    cadpro,
+                                    destino,
+                                    tipo,
+                                    descricao
+                                FROM 
+                                    (
+                                    select
+                                        *,
+                                        [vato1] / [quan1] vaun1,
+                                        case
+                                            when [quan1] < 0 then 'S'
+                                            else 'E'
+                                        end tipo
+                                    from
+                                        (
+                                        select
+                                            nrodct,
+                                            year(dtadct) % 2000 ano,
+                                            dtadct,
+                                            almox1 + almox2 + almox3 codccusto,
+                                            itens,
+                                            sum(case t.tipo_entsai when 'E' then qtdent else -qtdate end ) quan1,
+                                            sum(case t.tipo_entsai when 'E' then totite else -totite end ) vato1,
+                                            estrut + '.' + grupo + '.' + subgrp + '.' + itemat + '-' + digmat cadpro,
+                                            right('000000000' +(almox1 + almox2 + almox3),
+                                            9) destino,
+                                            t.descricao
+                                        From
+                                            mat.MET70100 e
+                                        join mat.met91600 t on
+                                            t.cmatip = e.cmatip
+                                        where
+                                            year(dtadct) > 1890
+                                        group by
+                                            nrodct,
+                                            dtadct,
+                                            almox1,
+                                            almox2,
+                                            almox3,
+                                            itens,
+                                            estrut,
+                                            grupo,
+                                            subgrp,
+                                            itemat,
+                                            digmat,
+                                            descricao) as query
+                                    where
+                                        [quan1] <> 0) sub
+                                GROUP BY 
+                                    nrodct,
+                                    ano,
+                                    dtadct,
+                                    codccusto,
+                                    itens,
+                                    tipo,
+                                    cadpro,
+                                    destino,
+                                    tipo,
+                                    descricao""")
     
-    id_requi = int(cur_fdb.execute('select max(id_requi) from requi').fetchone()[0])
+    id_requi = int(cur_fdb.execute('select coalesce(max(id_requi),0) from requi').fetchone()[0])
     nrodct_ant = '00000000000000000000'
+    tipo_ant = '.'
     
     for row in tqdm(consulta, desc='ESTOQUE - Inserindo Requisição do Exercício'):
-        if row['nrodct'] != nrodct_ant:
+        if (row['nrodct'] != nrodct_ant) or (row['nrodct'] == nrodct_ant and row['tipo'] != tipo_ant):
             empresa = EMPRESA
             id_requi += 1 
-            requi = f'{str(id_requi).zfill(6)}/{ANO%2000}'
+            requi = f'{str(id_requi).zfill(6)}/{row['ano']}'
             num = str(id_requi).zfill(6)
-            ano = ANO
+            ano = row['ano']
             destino = row['destino']
             codccusto = row['codccusto']
             dtlan = row['dtadct']
@@ -134,19 +180,25 @@ def requi():
                 entr = 'N'
                 said = 'S'
             comp = 3
+            tipo_ant = row['tipo']
             tiposaida = 'P'
             tprequi = 'OUTRA'
-            obs = f"REQUISIÇÃO - {row['nrodct']}"
+            obs = f"{row['descricao']} - {row['nrodct']}"
             nrodct_ant = row['nrodct']
             cur_fdb.execute(insert_requi,(empresa, id_requi, requi, num, ano, destino, codccusto, dtlan, datae, entr, said, comp, tiposaida, tprequi, obs, nrodct_ant))
 
         item = row['itens']
-        quan1 = abs(row['quan1'])
-        vaun1 = row['vaun1']
+        quan1 = abs(int(row['quan1']))
         vato1 = abs(float(row['vato1']))
+        vaun1 = vato1 / quan1 if quan1 != 0 else 0
+        quan2 = abs(int(row['quan2']))
+        vato2 = abs(float(row['vato2']))
+        vaun2 = vato2 / quan2 if quan2 != 0 else 0
         cadpro = PRODUTOS[row['cadpro']]
-        cur_fdb.execute(insert_icadreq,(id_requi, requi, codccusto, empresa, item, quan1, vaun1, vato1, cadpro, destino))
+        cur_fdb.execute(insert_icadreq,(id_requi, requi, codccusto, empresa, item, quan1, vaun1, vato1, quan2, vaun2, vato2, cadpro, destino))
     commit()
+    cur_fdb.execute('UPDATE requi SET dtpag = DATAE')
+    cur_fdb.execute('UPDATE ICADREQ SET codccusto = 1')
 
 def subpedidos():
     cria_campo('alter table requi add conversao varchar(1)')

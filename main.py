@@ -35,7 +35,7 @@ def main():
 # ##### ALMOXARIFADO #####   
     # compras.estoque.almoxarif_para_ccusto()
     # compras.estoque.requi_saldo_ant()
-    compras.estoque.requi()
+    # compras.estoque.requi()
 
 # ##### FROTAS #####
 #     conexao.cur_sql.execute('USE SMARfrotas')
@@ -59,6 +59,7 @@ def main():
 #     patrimonio.movimentacoes.baixas()
     # patrimonio.movimentacoes.reavaliacao()
     # patrimonio.movimentacoes.depreciacoes()
+    patrimonio.movimentacoes.transferencias()
 
 ##### AJUSTES #####
     # tools.aditivos_contratos()
