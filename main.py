@@ -53,13 +53,13 @@ def main():
 #     patrimonio.base.tipos_situacao()
 #     patrimonio.base.grupos()
 #     patrimonio.base.unidade_subunidade()
-#     patrimonio.cadastro.bens()
+    # patrimonio.cadastro.bens()
 #     patrimonio.movimentacoes.aquisicao()
 #     patrimonio.movimentacoes.ajuste()
-#     patrimonio.movimentacoes.baixas()
+    patrimonio.movimentacoes.baixas()
     # patrimonio.movimentacoes.reavaliacao()
     # patrimonio.movimentacoes.depreciacoes()
-    patrimonio.movimentacoes.transferencias()
+    # patrimonio.movimentacoes.transferencias()
 
 ##### AJUSTES #####
     # tools.aditivos_contratos()
