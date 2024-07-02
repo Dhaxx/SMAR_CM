@@ -3,7 +3,7 @@ from modulos.patrimonio import *
 def aquisicao():
     cur_fdb.execute("delete from pt_movbem where tipo_mov = 'A'")
     
-    codigo_mov = cur_fdb.execute('SELECT COALESCE(MAX(CODIGO_MOV), 0) FROM PT_MOVBEM').fetchone()[0]
+    codigo_mov = 1407752#cur_fdb.execute('SELECT COALESCE(MAX(CODIGO_MOV), 0) FROM PT_MOVBEM').fetchone()[0]
 
     consulta =  cur_fdb.execute('''
                     SELECT
@@ -126,8 +126,8 @@ def baixas():
     codigo_mov = cur_fdb.execute('SELECT COALESCE(MAX(CODIGO_MOV), 0) FROM PT_MOVBEM').fetchone()[0]
 
     consulta = cur_fdb.execute('''SELECT P.EMPRESA_PAT AS EMPRESA_MOV, P.CODIGO_PAT AS CODIGO_PAT_MOV, P.DTPAG_PAT AS DATA_MOV, P.CODIGO_BAI_PAT AS CODIGO_BAI_MOV,
-    P.CODIGO_SET_ATU_PAT AS CODIGO_SET_MOV, P.VALATU_PAT AS VALOR_MOV, NULL AS HISTORICO_MOV FROM PT_CADPAT P WHERE P.DTPAG_PAT IS NOT NULL
-    ORDER BY P.CODIGO_PAT''').fetchallmap()
+                                  P.CODIGO_SET_ATU_PAT AS CODIGO_SET_MOV, P.VALATU_PAT AS VALOR_MOV, NULL AS HISTORICO_MOV FROM PT_CADPAT P WHERE P.DTPAG_PAT IS NOT NULL
+                                  ORDER BY P.CODIGO_PAT''').fetchallmap()
 
     insert_movbem = cur_fdb.prep('''
                                 INSERT INTO
@@ -189,7 +189,7 @@ def reavaliacao():
                                     237110301 codigo_cpl_mov
                                 from
                                     mat.MPT80900
-                                --where idpatrimonio = 27""")
+                                --where idpatrimonio = 203""")
     
     insert = cur_fdb.prep('''INSERT INTO
                                 pt_movbem (codigo_mov,
@@ -209,8 +209,10 @@ def reavaliacao():
     
     codigo_mov = cur_fdb.execute('SELECT COALESCE(MAX(CODIGO_MOV), 0) FROM PT_MOVBEM').fetchone()[0]
 
-    cadpat = cur_fdb.execute("select codigo_pat, valaqu_pat from pt_cadpat").fetchallmap()
-    valores = { row['codigo_pat']: row['valaqu_pat'] for row in cadpat}
+    valor_acumulado = cur_fdb.prep('select sum(valor_mov)  from pt_movbem where (codigo_pat_mov = ? OR CODIGO_PAT_MOV IN (SELECT CODIGO_PAT FROM PT_CADPAT pc WHERE codigo_ant_pat = ?)) and data_mov < ?')
+
+    # cadpat = cur_fdb.execute("select codigo_pat, valaqu_pat from pt_cadpat").fetchallmap()
+    # valores = { row['codigo_pat']: row['valaqu_pat'] for row in cadpat}
 
     for row in tqdm(consulta, desc='PATRIMÔNIO - INSERINDO REAVALIAÇÕES'):
         codigo_mov += 1
@@ -220,7 +222,10 @@ def reavaliacao():
         tipo_mov = 'R'
         codigo_cpl_mov = row['codigo_cpl_mov']
         codigo_set_mov = 0
-        valor_mov = float(row['valor_mov']) - valores.get(row['idpatrimonio'],0) 
+        data_string = str(data_mov)
+        data_string = data_string[:10]
+        valor_anterior = cur_fdb.execute(valor_acumulado,(codigo_pat_mov, codigo_pat_mov, data_string)).fetchone()[0]
+        valor_mov = float(row['valor_mov']) - valor_anterior 
         historico_mov = 'REAVALIAÇÃO - ' + str(row['mes']) + '/' + str(row['ano'])
         lote_mov = None
         percentual_mov = None
@@ -228,7 +233,7 @@ def reavaliacao():
 
         cur_fdb.execute(insert, (codigo_mov, empresa_mov, codigo_pat_mov, data_mov, tipo_mov, codigo_cpl_mov, codigo_set_mov, valor_mov, historico_mov,
                                  lote_mov, percentual_mov, depreciacao_mov))
-    commit()
+        commit()
     cur_fdb.execute("""update pt_cadpat a set a.dtlan_pat = (select first 1 b.data_mov from pt_movbem b where b.codigo_pat_mov = a.codigo_pat and b.tipo_mov = 'R' and b.depreciacao_mov = 'N'  order by b.data_mov desc),
                        a.valatu_pat = (select first 1 b.valor_mov from pt_movbem b where b.codigo_pat_mov = a.codigo_pat and b.tipo_mov = 'R' and b.depreciacao_mov = 'N'  order by b.data_mov desc)
                        where exists(select 1 from pt_movbem b where b.codigo_pat_mov = a.codigo_pat and b.tipo_mov = 'R' and b.depreciacao_mov = 'N')""")
@@ -294,7 +299,6 @@ def depreciacoes():
         cur_fdb.execute(insert, (codigo_mov, empresa_mov, codigo_pat_mov, data_mov, tipos_mov, codigo_cpl_mov, codigo_set_mov, valor_mov, historico_mov,
                                  lote_mov, percentual_mov, depreciacao_mov))
     commit()
-    cur_fdb.execute("EXECUTE PROCEDURE DEL_DEPRECIACAO_ANTREAV")
 
 def transferencias():
     cur_fdb.execute("delete from pt_movbem where tipo_mov = 'T'")

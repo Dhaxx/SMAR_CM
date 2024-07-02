@@ -240,7 +240,7 @@ def bens():
                                         a.idNivel5 = p052.idUnidorc
                                     ) as rn
                                 where
-                                    [codigo_pat] in (000588, 000589, 000601, 000602, 000603, 000604, 000605, 000606, 000607, 000621, 000622, 000623, 000624, 000625,
+                                    [chapa_pat] in (000588, 000589, 000601, 000602, 000603, 000604, 000605, 000606, 000607, 000621, 000622, 000623, 000624, 000625,
                                                      000628, 000659, 000671, 000672, 000703, 000704, 000705, 000706, 000707, 000708, 000709, 000710, 000711, 000712, 
                                                      000713, 000714, 000715, 000716, 000717, 000718, 000743, 000751, 000752, 000755, 000756, 000772, 000773, 000774, 
                                                      000775, 000776, 000777, 000778, 000779, 000780, 000781, 000782, 000783, 000784, 000785, 000786, 000842, 000843, 
@@ -253,7 +253,7 @@ def bens():
                                                      001536, 001758, 001759, 001848, 001849, 001912, 001913, 001916, 001917, 002029, 002030)
                             ''')
     
-    insert = cur_fdb.prep('''
+    insert = cur_fdb.prep("""
                           insert
                                 into
                                 pt_cadpat (codigo_pat,
@@ -281,9 +281,9 @@ def bens():
                                             dtpag_pat,
                                             nota_pat,
                                             codigo_ant_pat,
-                                            replace(cpl_ant, ' DA ', ' PARA '))
+                                            cpl_ant)
                             values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-                          ''')
+                          """)
     
     cadsit = cur_fdb.execute('select descricao_sit, codigo_sit from pt_cadsit').fetchallmap()
     situacoes = {s['descricao_sit']: s['codigo_sit'] for s in cadsit}
@@ -303,8 +303,8 @@ def bens():
         codigo_sit_pat = situacoes.get(row['codigo_sit_pat'], 0)
         discr_pat = row['discr_pat'][:255] if row['discr_pat'] else None
         obs_pat = row['obs_pat']
-        datae_pat = row['datae_pat']
-        dtlan_pat = row['datae_pat']
+        datae_pat = row['datae_pat'].strftime('%Y-%m-%d') if row['datae_pat'] else None
+        dtlan_pat = row['datae_pat'].strftime('%Y-%m-%d') if row['datae_pat'] else None
         valaqu_pat = row['valaqu_pat']
         valatu_pat = row['valatu_pat']
         codigo_for_pat = INSMF.get(row['codigo_for_pat'], 411)
@@ -312,11 +312,11 @@ def bens():
         dae_pat = row['dae_pat']
         valres_pat = row['valres_pat']
         percentemp_pat = 'M' if dae_pat else None
-        dtpag_pat = row['dtpag_pat']
+        dtpag_pat = row['dtpag_pat'].strftime('%Y-%m-%d') if row['dtpag_pat'] else None
         codigo_bai_pat = 2 if dtpag_pat else None
         nota_pat = row['nota_pat']
         codigo_ant_pat = row['codigo_pat']
-        cpl_ant = row['cpl_ant']
+        cpl_ant = row['cpl_ant'].replace(' DA ', ' PARA ')
         cur_fdb.execute(insert,(codigo_pat, empresa_pat, codigo_gru_pat, chapa_pat, codigo_cpl_pat, codigo_set_pat, codigo_set_atu_pat, 
                                 orig_pat, codigo_tip_pat, codigo_sit_pat, discr_pat, obs_pat, datae_pat, dtlan_pat, valaqu_pat, valatu_pat, 
                                 codigo_for_pat, percenqtd_pat, dae_pat, valres_pat, percentemp_pat, codigo_bai_pat, dtpag_pat, nota_pat, codigo_ant_pat, cpl_ant))

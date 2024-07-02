@@ -54,12 +54,12 @@ def main():
 #     patrimonio.base.grupos()
 #     patrimonio.base.unidade_subunidade()
     # patrimonio.cadastro.bens()
-#     patrimonio.movimentacoes.aquisicao()
+    # patrimonio.movimentacoes.aquisicao()
 #     patrimonio.movimentacoes.ajuste()
-    patrimonio.movimentacoes.baixas()
-    # patrimonio.movimentacoes.reavaliacao()
+    # patrimonio.movimentacoes.baixas()
     # patrimonio.movimentacoes.depreciacoes()
-    # patrimonio.movimentacoes.transferencias()
+    # patrimonio.movimentacoes.reavaliacao()
+    patrimonio.movimentacoes.transferencias()
 
 ##### AJUSTES #####
     # tools.aditivos_contratos()
